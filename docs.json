@@ -22,7 +22,6 @@
           {
             "group": "Customization",
             "pages": [
-              "essentials/settings",
               "essentials/navigation"
             ]
           },
