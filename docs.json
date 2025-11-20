@@ -1,65 +1,50 @@
 {
   "$schema": "https://mintlify.com/docs.json",
+  "name": "RunBlob",
   "theme": "mint",
-  "name": "runblob",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#8B5CF6",
+    "light": "#A78BFA",
+    "dark": "#6D28D9"
   },
   "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/lightr.svg",
+    "dark": "/logo/darkr.svg",
+    "href": "https://runblob.io",
+    "height": 50
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index"
+              "quickstart",
+              "authentication",
+              "pricing"
             ]
           },
           {
-            "group": "Authentication",
+            "group": "Video Generation APIs",
             "pages": [
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "API Endpoints",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "video/veo31",
+              "video/sora2",
+              "video/kling"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "API Documentation",
             "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/introduction",
+              "api-reference/common"
             ]
           }
         ]
@@ -68,33 +53,29 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Community",
+          "icon": "discord",
+          "href": "https://discord.gg/runblob"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Support",
+          "icon": "envelope",
+          "href": "mailto:support@runblob.io"
         }
       ]
     }
   },
-  "logo": {
-    "light": "/logo/lightr.svg",
-    "dark": "/logo/darkr.svg"
-  },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Dashboard",
+        "href": "https://runblob.io/dashboard"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get API Key",
+      "href": "https://runblob.io/signup"
     }
   },
   "contextual": {
@@ -104,16 +85,20 @@
       "chatgpt",
       "claude",
       "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+      "cursor"
     ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://twitter.com/runblob",
+      "github": "https://github.com/runblob",
+      "discord": "https://discord.gg/runblob"
+    }
+  },
+  "api": {
+    "baseUrl": "https://api.runblob.io",
+    "auth": {
+      "method": "bearer"
     }
   }
 }
