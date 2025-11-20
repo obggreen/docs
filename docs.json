@@ -20,13 +20,13 @@
             ]
           },
           {
-            "group": "Customization",
+            "group": "Authentication",
             "pages": [
               "essentials/navigation"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "API Endpoints",
             "pages": [
               "essentials/markdown",
               "essentials/code",
