@@ -8,10 +8,10 @@
   },
   "favicon": "/favicon.png",
   "colors": {
-    "primary": "#18E299",
-    "light": "#4ADE80",
-    "dark": "#15803D"
-  },
+  "primary": "#5929DE",
+  "light": "#7B5BFF",
+  "dark": "#3C1E99"
+},
   "theme": "willow",
   "navbar": {
     "links": [
