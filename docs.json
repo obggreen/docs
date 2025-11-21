@@ -45,8 +45,8 @@
     }
   },
   "logo": {
-    "light": "/logo/lightr.svg",
-    "dark": "/logo/darkr.svg",
+    "light": "runblob.svg",
+    "dark": "runblob.svg",
     "height": 50
   },
   "navbar": {
