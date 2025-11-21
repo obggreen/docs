@@ -1,59 +1,743 @@
 ---
-title: 'Images and embeds'
-description: 'Add image, video, and other HTML elements'
-icon: 'image'
+title: "Sora 2 API"
+description: "Generate cinematic videos using OpenAI Sora 2"
+icon: "wand-magic-sparkles"
 ---
 
-<img
-  style={{ borderRadius: '0.5rem' }}
-  src="https://mintlify-assets.b-cdn.net/bigbend.jpg"
-/>
+# Sora 2 API
 
-## Image
+Generate high-quality cinematic videos from text or images using OpenAI's Sora 2
 
-### Using Markdown
+**Base URL:** `https://api.runblob.io`
 
-The [markdown syntax](https://www.markdownguide.org/basic-syntax/#images) lets you add images using the following code
+---
 
-```md
-![title](/path/image.jpg)
+## Overview
+
+Sora 2 API enables professional-quality video generation with real-time progress tracking.
+
+**Supported Features:**
+
+<CardGroup cols={2}>
+  <Card title="Text-to-Video" icon="text">
+    Generate videos from text descriptions
+  </Card>
+  <Card title="Image-to-Video" icon="image">
+    Animate static images with motion
+  </Card>
+  <Card title="Progress Tracking" icon="chart-line">
+    Real-time progress and queue position
+  </Card>
+  <Card title="Multiple Formats" icon="frame">
+    Portrait and landscape orientations
+  </Card>
+</CardGroup>
+
+---
+
+## Model Overview
+
+### Sora 2 (sy_8)
+
+OpenAI's advanced video generation model with cinematic quality output.
+
+**Characteristics:**
+
+| Feature                   | Description                  |
+| ------------------------- | ---------------------------- |
+| **Quality**               | Cinematic, high-fidelity     |
+| **Speed**                 | 10s: ~2-5 min, 15s: ~3-7 min |
+| **Creativity**            | High                         |
+| **Realism**               | Very high                    |
+| **Context Understanding** | Advanced                     |
+
+**Capabilities:**
+
+- ✅ Text-to-video
+- ✅ Image-to-video
+- ✅ Real-time progress tracking
+- ✅ Queue position monitoring
+
+---
+
+## Generate Video
+
+### Endpoint
+
+```
+POST /v1/sora/generate
 ```
 
-Note that the image file size must be less than 5MB. Otherwise, we recommend hosting on a service like [Cloudinary](https://cloudinary.com/) or [S3](https://aws.amazon.com/s3/). You can then use that URL and embed.
+Creates a new video generation task from text or image input.
 
-### Using embeds
+### Request Parameters
 
-To get more customizability with images, you can also use [embeds](/writing-content/embed) to add images
+<ParamField body="prompt" type="string" required>
+  Text description of the video (1-4000 characters)
+</ParamField>
 
-```html
-<img height="200" src="/path/image.jpg" />
+<ParamField body="orientation" default="portrait" type="string">
+  Video orientation: `portrait` (9:16, 352x640) or `landscape` (16:9, 640x352)
+</ParamField>
+
+<ParamField body="duration" default="10" type="integer">
+  Video duration in seconds: `10` or `15`
+</ParamField>
+
+<ParamField body="callback_url" type="string">
+  Webhook URL for completion notifications
+</ParamField>
+
+<ParamField body="image_base64" type="string">
+  Base64-encoded input image for Image-to-Video (max ~10MB, JPEG/PNG)
+
+  Format: `data:image/jpeg;base64,/9j/4AAQ...`
+</ParamField>
+
+### Orientation Options
+
+| Value       | Resolution | Aspect Ratio | Best For                       |
+| ----------- | ---------- | ------------ | ------------------------------ |
+| `portrait`  | 352x640    | 9:16         | Mobile, Stories, Reels, TikTok |
+| `landscape` | 640x352    | 16:9         | YouTube, TV, Desktop           |
+
+### Duration Options
+
+| Value | Frames | Description          |
+| ----- | ------ | -------------------- |
+| `10`  | 300    | 10 seconds at 30 fps |
+| `15`  | 450    | 15 seconds at 30 fps |
+
+<Note>
+  Pricing is the same regardless of duration or orientation.
+</Note>
+
+### Example Requests
+
+<CodeGroup>
+
+```bash Simple Text-to-Video
+curl -X POST https://api.runblob.io/v1/sora/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A golden retriever running through a sunflower field at sunset"
+  }'
 ```
 
-## Embeds and HTML elements
 
-<iframe
-  width="560"
-  height="315"
-  src="https://www.youtube.com/embed/4KzFe50RQkQ"
-  title="YouTube video player"
-  frameBorder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen
-  style={{ width: '100%', borderRadius: '0.5rem' }}
-></iframe>
+```python Landscape Video
+import requests
 
-<br />
+url = "https://api.runblob.io/v1/sora/generate"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "prompt": "A futuristic cyberpunk city at night with neon lights and flying cars",
+    "orientation": "landscape",
+    "duration": 15,
+    "callback_url": "https://yourdomain.com/webhook"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())
+```
+
+
+```javascript Image-to-Video
+const response = await fetch('https://api.runblob.io/v1/sora/generate', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    prompt: 'Animate this portrait with subtle movements and natural breathing',
+    image_base64: 'data:image/jpeg;base64,...',
+    orientation: 'portrait',
+    duration: 10
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+
+```python Image-to-Video (Base64)
+import base64
+import requests
+
+# Read image file
+with open("portrait.jpg", "rb") as f:
+    image_data = base64.b64encode(f.read()).decode("utf-8")
+
+# Create request
+response = requests.post(
+    "https://api.runblob.io/v1/sora/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Subtle animation with blinking and gentle head movement",
+        "image_base64": f"data:image/jpeg;base64,{image_data}",
+        "orientation": "portrait",
+        "duration": 10
+    }
+)
+
+result = response.json()
+print(f"Generation ID: {result['generation_id']}")
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "pending",
+  "price": "0.0500"
+}
+```
+
+---
+
+## Check Status
+
+Monitor video generation progress with real-time updates
+
+### Endpoint
+
+```
+GET /v1/sora/generations/{generation_id}
+```
+
+Get the current status, progress percentage, and queue position of your video generation task.
+
+### Path Parameters
+
+<ParamField path="generation_id" type="string" required>
+  Generation UUID returned from the generate endpoint
+</ParamField>
+
+### Example Requests
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://api.runblob.io/v1/sora/generations/550e8400-e29b-41d4 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+
+```python Python
+import requests
+
+generation_id = "550e8400-e29b-41d4-a716-446655440000"
+url = f"https://api.runblob.io/v1/sora/generations/{generation_id}"
+
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY"
+}
+
+response = requests.get(url, headers=headers)
+data = response.json()
+
+print(f"Status: {data['status']}")
+if data.get('progress_pct'):
+    print(f"Progress: {data['progress_pct']}%")
+if data.get('progress_pos_in_queue'):
+    print(f"Queue position: {data['progress_pos_in_queue']}")
+```
+
+
+```javascript JavaScript
+const generationId = '550e8400-e29b-41d4-a716-446655440000';
+const url = `https://api.runblob.io/v1/sora/generations/${generationId}`;
+
+const response = await fetch(url, {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+
+const data = await response.json();
+console.log(`Status: ${data.status}`);
+if (data.progress_pct) {
+  console.log(`Progress: ${data.progress_pct}%`);
+}
+```
+
+
+```python Polling with Progress
+import time
+import requests
+
+API_KEY = "YOUR_API_KEY"
+GENERATION_ID = "550e8400-e29b-41d4-a716-446655440000"
+BASE_URL = "https://api.runblob.io/v1/sora"
+
+headers = {"Authorization": f"Bearer {API_KEY}"}
+
+# Polling loop with progress tracking
+while True:
+    response = requests.get(
+        f"{BASE_URL}/generations/{GENERATION_ID}",
+        headers=headers
+    )
+    
+    data = response.json()
+    status = data["status"]
+    
+    # Display status with progress
+    if status == "pending":
+        print("⏳ Pending...")
+    elif status == "processing":
+        if data.get("progress_pos_in_queue"):
+            print(f"🔄 In queue: position {data['progress_pos_in_queue']}")
+        elif data.get("progress_pct"):
+            print(f"⚙️ Processing: {data['progress_pct']}% complete")
+    elif status == "completed":
+        print(f"✅ Video ready: {data['video_url']}")
+        break
+    elif status == "failed":
+        print("❌ Generation failed")
+        break
+    
+    # Wait before next check
+    time.sleep(5)
+```
+
+</CodeGroup>
+
+### Response
+
+<Tabs>
+  <Tab title="Processing">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "processing",
+      "prompt": "A serene lake surrounded by mountains at sunset",
+      "video_url": null,
+      "created_at": "2025-11-21T10:30:00Z",
+      "completed_at": null,
+      "progress_pct": 65,
+      "progress_pos_in_queue": null
+    }
+    ```
+  </Tab>
+  <Tab title="Completed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "completed",
+      "prompt": "A serene lake surrounded by mountains at sunset",
+      "video_url": "https://cdn.runblob.io/videos/550e8400.mp4",
+      "created_at": "2025-11-21T10:30:00Z",
+      "completed_at": "2025-11-21T10:35:00Z",
+      "progress_pct": 100,
+      "progress_pos_in_queue": null
+    }
+    ```
+  </Tab>
+  <Tab title="In Queue">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "processing",
+      "prompt": "A serene lake surrounded by mountains at sunset",
+      "video_url": null,
+      "created_at": "2025-11-21T10:30:00Z",
+      "completed_at": null,
+      "progress_pct": null,
+      "progress_pos_in_queue": 3
+    }
+    ```
+  </Tab>
+  <Tab title="Failed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "prompt": "A serene lake surrounded by mountains at sunset",
+      "video_url": null,
+      "created_at": "2025-11-21T10:30:00Z",
+      "completed_at": "2025-11-21T10:31:00Z",
+      "progress_pct": null,
+      "progress_pos_in_queue": null
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Response Fields
+
+| Field                   | Type                | Description                 |
+| ----------------------- | ------------------- | --------------------------- |
+| `generation_id`         | `string`            | Generation UUID             |
+| `status`                | `string`            | Current status              |
+| `prompt`                | `string`            | Original prompt             |
+| `video_url`             | `string` or `null`  | URL of completed video      |
+| `created_at`            | `string`            | ISO 8601 creation time      |
+| `completed_at`          | `string` or `null`  | ISO 8601 completion time    |
+| `progress_pct`          | `integer` or `null` | Progress percentage (0-100) |
+| `progress_pos_in_queue` | `integer` or `null` | Queue position (1 = next)   |
+
+### Status Values
+
+| Status       | Description                    | Progress Available |
+| ------------ | ------------------------------ | ------------------ |
+| `pending`    | Task created, waiting to start | ❌ No               |
+| `processing` | Video is being generated       | ✅ Yes              |
+| `completed`  | Video is ready for download    | ✅ Yes (100%)       |
+| `failed`     | Generation failed              | ❌ No               |
 
 <Tip>
-
-Mintlify supports [HTML tags in Markdown](https://www.markdownguide.org/basic-syntax/#html). This is helpful if you prefer HTML tags to Markdown syntax, and lets you create documentation with infinite flexibility.
-
+  Use `progress_pct` to show a progress bar to your users for better UX.
 </Tip>
 
-### iFrames
+---
 
-Loads another HTML page within the document. Most commonly used for embedding videos.
+## List Generations
 
-```html
-<iframe src="https://www.youtube.com/embed/4KzFe50RQkQ"> </iframe>
+Get a list of all your video generations
+
+### Endpoint
+
 ```
+GET /v1/sora/generations
+```
+
+### Query Parameters
+
+<ParamField query="limit" default="50" type="integer">
+  Number of results to return (max 100)
+</ParamField>
+
+<ParamField query="offset" default="0" type="integer">
+  Pagination offset
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET "https://api.runblob.io/v1/sora/generations?limit=10&offset=0" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+
+```python Python
+import requests
+
+url = "https://api.runblob.io/v1/sora/generations"
+headers = {"Authorization": "Bearer YOUR_API_KEY"}
+params = {"limit": 10, "offset": 0}
+
+response = requests.get(url, headers=headers, params=params)
+generations = response.json()
+
+for gen in generations:
+    print(f"{gen['generation_id']}: {gen['status']}")
+```
+
+
+```javascript JavaScript
+const url = 'https://api.runblob.io/v1/sora/generations?limit=10&offset=0';
+const response = await fetch(url, {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+
+const generations = await response.json();
+generations.forEach(gen => {
+  console.log(`${gen.generation_id}: ${gen.status}`);
+});
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+[
+  {
+    "generation_id": "abc123",
+    "status": "completed",
+    "prompt": "A serene lake...",
+    "video_url": "https://cdn.runblob.io/videos/abc123.mp4",
+    "created_at": "2025-11-21T10:30:00Z",
+    "completed_at": "2025-11-21T10:35:00Z",
+    "progress_pct": 100,
+    "progress_pos_in_queue": null
+  },
+  {
+    "generation_id": "def456",
+    "status": "processing",
+    "prompt": "A futuristic city...",
+    "video_url": null,
+    "created_at": "2025-11-21T10:40:00Z",
+    "completed_at": null,
+    "progress_pct": 45,
+    "progress_pos_in_queue": null
+  }
+]
+```
+
+---
+
+## Webhooks
+
+Receive automatic notifications when your video is ready.
+
+### Callback Payload
+
+When `callback_url` is provided in the generate request, the system will POST to your URL upon completion:
+
+<Tabs>
+  <Tab title="Success">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "completed",
+      "video_url": "https://cdn.runblob.io/videos/550e8400.mp4",
+      "completed_at": "2025-11-21T10:35:00Z",
+      "progress_pct": 100
+    }
+    ```
+  </Tab>
+  <Tab title="Failed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "completed_at": "2025-11-21T10:35:00Z",
+      "error": {
+        "message": "Generation failed",
+        "details": {}
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  **Security Best Practices:**
+
+  - Use HTTPS endpoints only
+  - Validate `generation_id` before processing
+  - Make additional GET request to verify status
+</Tip>
+
+---
+
+## Error Responses
+
+<AccordionGroup>
+  <Accordion title="Invalid API Key (401)">
+    ```json
+    {
+      "detail": "Missing credentials"
+    }
+    ```
+
+    **Solution:** Check your API key in the Authorization header
+  </Accordion>
+  <Accordion title="Insufficient Credits (402)">
+    ```json
+    {
+      "detail": "INSUFFICIENT_CREDITS"
+    }
+    ```
+
+    **Solution:** Add credits to your account
+  </Accordion>
+  <Accordion title="Invalid Duration (422)">
+    ```json
+    {
+      "detail": [
+        {
+          "type": "enum",
+          "loc": ["body", "duration"],
+          "msg": "Input should be 10 or 15"
+        }
+      ]
+    }
+    ```
+
+    **Solution:** Use duration value of `10` or `15` only
+  </Accordion>
+  <Accordion title="Invalid Orientation (422)">
+    ```json
+    {
+      "detail": [
+        {
+          "type": "enum",
+          "loc": ["body", "orientation"],
+          "msg": "Input should be 'portrait' or 'landscape'"
+        }
+      ]
+    }
+    ```
+
+    **Solution:** Use `portrait` or `landscape` only
+  </Accordion>
+  <Accordion title="Generation Not Found (404)">
+    ```json
+    {
+      "detail": "Generation not found"
+    }
+    ```
+
+    **Solution:** Verify the generation_id is correct
+  </Accordion>
+</AccordionGroup>
+
+### HTTP Status Codes
+
+| Code  | Description                             |
+| ----- | --------------------------------------- |
+| `201` | Generation created successfully         |
+| `200` | Success                                 |
+| `400` | Bad Request - Invalid parameters        |
+| `401` | Unauthorized - Invalid API key          |
+| `402` | Payment Required - Insufficient credits |
+| `404` | Not Found - Generation not found        |
+| `422` | Validation Error - Invalid input        |
+| `500` | Internal Server Error                   |
+
+---
+
+## Best Practices
+
+### Prompt Engineering for Sora
+
+<Card title="Writing Cinematic Prompts" icon="film">
+  **Effective prompts should include:**
+
+  - Detailed visual descriptions
+  - Camera movements and angles
+  - Lighting and atmosphere
+  - Motion and actions
+  - Emotional tone
+
+  **Camera Movement Keywords:**
+
+  - "dolly zoom", "crane shot", "tracking shot"
+  - "handheld camera", "static shot"
+  - "bird's eye view", "low angle", "close-up"
+</Card>
+
+**Examples:**
+
+✅ **Good:** "Close-up shot of a red rose with dew drops, slowly opening its petals at dawn, soft golden morning light, shallow depth of field, cinematic"
+
+✅ **Good:** "Tracking shot following a cyclist riding through cherry blossom trees, petals falling in slow motion, golden hour lighting"
+
+❌ **Bad:** "flower"\
+❌ **Bad:** "car on road"
+
+### Image-to-Video Tips
+
+<CardGroup cols={2}>
+  <Card title="Image Quality" icon="image">
+    - Use high-quality images (1024x1024+)
+    - Match orientation to desired output
+    - Max size: ~10MB
+    - Formats: JPEG, PNG
+  </Card>
+  <Card title="Prompt Strategy" icon="pencil">
+    - Describe **desired movement**, not image content
+    - Example: "Subtle animation: eyes blink, hair sways gently"
+    - Focus on natural, realistic motion
+  </Card>
+</CardGroup>
+
+### Duration Selection Guide
+
+| Duration | Best For                         | Pros                   | Cons                 |
+| -------- | -------------------------------- | ---------------------- | -------------------- |
+| **10s**  | Quick clips, loops, social media | Faster generation      | Limited storytelling |
+| **15s**  | Narratives, detailed scenes      | More context, smoother | Slightly longer wait |
+
+<Tip>
+  Start with 10s for testing prompts, then use 15s for final production.
+</Tip>
+
+### Orientation Selection
+
+| Orientation   | Resolution     | Best For                                 |
+| ------------- | -------------- | ---------------------------------------- |
+| **Portrait**  | 352x640 (9:16) | Instagram Stories, TikTok, Reels, Mobile |
+| **Landscape** | 640x352 (16:9) | YouTube, Desktop, TV, Presentations      |
+
+### Progress Tracking Strategy
+
+Implement adaptive polling intervals based on progress:
+
+```python
+def get_poll_interval(data):
+    status = data['status']
+    
+    if status == 'pending':
+        return 3  # Check frequently when starting
+    elif status == 'processing':
+        progress = data.get('progress_pct', 0)
+        if progress < 20:
+            return 5  # Early stage
+        elif progress < 80:
+            return 8  # Middle stage
+        else:
+            return 3  # Near completion - check often
+    
+    return 5  # Default
+```
+
+---
+
+## Content Limitations
+
+### Technical Constraints
+
+| Limitation          | Value           |
+| ------------------- | --------------- |
+| Max prompt length   | 4000 characters |
+| Max image size      | ~10 MB          |
+| Supported formats   | JPEG, PNG       |
+| Video output        | MP4 (H.264)     |
+| Framerate           | 30 fps (fixed)  |
+| Max generation time | 15 minutes      |
+
+### Content Moderation
+
+Sora API includes automatic content moderation:
+
+<Warning>
+  **Prohibited Content:**
+
+  - Violence and graphic content
+  - NSFW content
+  - Misinformation and deepfakes of public figures
+  - Copyright violations
+
+  Violations will result in request rejection (HTTP 400) or failed generation with "content_moderation" reason.
+</Warning>
+
+---
+
+## Need Help?
+
+<Card icon="paper-plane" iconType="duotone">
+  **Questions about Sora 2 API?** Contact our support team via [Telegram](https://t.me/runblob_support) for assistance.
+
+  We're here to help you 24/7! 🚀
+</Card>
