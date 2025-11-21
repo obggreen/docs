@@ -8,7 +8,7 @@ icon: "video"
 
 Generate stunning videos from text prompts using Google's Veo 3 model
 
-**Base URL:** `https://api.runblob.io`
+**Base URL:** `https://platform.runblob.io`
 
 ---
 
@@ -73,7 +73,7 @@ Creates a video generation task from text description using Google Veo 3.
 <CodeGroup>
 
 ```bash Text-to-Video
-curl -X POST https://api.runblob.io/v1/veo/generate \
+curl -X POST https://platfrom.runblob.io/v1/veo/generate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -87,7 +87,7 @@ curl -X POST https://api.runblob.io/v1/veo/generate \
 ```python Python
 import requests
 
-url = "https://api.runblob.io/v1/veo/generate"
+url = "https://platfrom.runblob.io/v1/veo/generate"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",
     "Content-Type": "application/json"
@@ -105,7 +105,7 @@ print(response.json())
 
 
 ```javascript JavaScript
-const url = 'https://api.runblob.io/v1/veo/generate';
+const url = 'https://platfrom.runblob.io/v1/veo/generate';
 const headers = {
   'Authorization': 'Bearer YOUR_API_KEY',
   'Content-Type': 'application/json'
@@ -129,7 +129,7 @@ console.log(result);
 
 
 ```bash Image-to-Video
-curl -X POST https://api.runblob.io/v1/veo/generate \
+curl -X POST https://platfrom.runblob.io/v1/veo/generate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -141,7 +141,7 @@ curl -X POST https://api.runblob.io/v1/veo/generate \
 
 
 ```bash Frame-to-Frame
-curl -X POST https://api.runblob.io/v1/veo/generate \
+curl -X POST https://platfrom.runblob.io/v1/veo/generate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
