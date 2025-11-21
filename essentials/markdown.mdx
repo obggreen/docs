@@ -1,88 +1,331 @@
 ---
-title: 'Markdown syntax'
-description: 'Text, title, and styling in standard markdown'
-icon: 'text-size'
+title: "Veo 3 API"
+description: "Generate videos from text prompts using Google Veo 3"
+icon: "video"
 ---
 
-## Titles
+# Veo 3 Videos
 
-Best used for section headers.
+Generate stunning videos from text prompts using Google's Veo 3 model
 
-```md
-## Titles
+**Base URL:** `https://api.runblob.io`
+
+---
+
+## Generate Video
+
+<Note>
+  Video generation typically takes 1-10 minutes. Use the `task_id` to check status or set up webhooks for notifications.
+</Note>
+
+### Endpoint
+
+```
+POST /v1/veo/generate
 ```
 
-### Subtitles
+Creates a video generation task from text description using Google Veo 3.
 
-Best used for subsection headers.
+### Request Parameters
 
-```md
-### Subtitles
+<ParamField body="prompt" type="string" required>
+  Text description of the video (10-4000 characters)
+</ParamField>
+
+<ParamField body="model_type" default="veo-3-fast" type="string">
+  Model version: `veo-3-fast` or `veo-3-quality`
+</ParamField>
+
+<ParamField body="seed" type="number">
+  Reproducibility seed (1-10000)
+</ParamField>
+
+<ParamField body="callback_url" type="string">
+  Webhook URL for completion notifications
+</ParamField>
+
+<ParamField body="bytes_image" type="string">
+  Base64-encoded image for image-to-video (max 20MB, JPEG/PNG/WEBP)
+</ParamField>
+
+<ParamField body="start_frame" type="string">
+  Base64-encoded start frame for Frame-to-Frame mode (requires `end_frame`)
+</ParamField>
+
+<ParamField body="end_frame" type="string">
+  Base64-encoded end frame for Frame-to-Frame mode (requires `start_frame`)
+</ParamField>
+
+<ParamField body="reference_images" type="array">
+  Array of 1-3 base64-encoded images for reference-based generation (only `veo-3-fast` supported)
+</ParamField>
+
+<ParamField body="filter_text" type="string">
+  Content filtering options: `moderate`, `translate`, `moderate_translate`
+</ParamField>
+
+<ParamField body="aspect_ratio" default="16:9" type="string">
+  Video aspect ratio: `9:16` or `16:9`
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```bash Text-to-Video
+curl -X POST https://api.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A cat playing with a ball in a sunny room",
+    "model_type": "veo-3-fast",
+    "seed": 1234
+  }'
 ```
 
-<Tip>
 
-Each **title** and **subtitle** creates an anchor and also shows up on the table of contents on the right.
+```python Python
+import requests
 
-</Tip>
+url = "https://api.runblob.io/v1/veo/generate"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
 
-## Text formatting
+payload = {
+    "prompt": "A cat playing with a ball in a sunny room",
+    "model_type": "veo-3-fast",
+    "seed": 1234
+}
 
-We support most markdown formatting. Simply add `**`, `_`, or `~` around text to format it.
-
-| Style         | How to write it   | Result          |
-| ------------- | ----------------- | --------------- |
-| Bold          | `**bold**`        | **bold**        |
-| Italic        | `_italic_`        | _italic_        |
-| Strikethrough | `~strikethrough~` | ~strikethrough~ |
-
-You can combine these. For example, write `**_bold and italic_**` to get **_bold and italic_** text.
-
-You need to use HTML to write superscript and subscript text. That is, add `<sup>` or `<sub>` around your text.
-
-| Text Size   | How to write it          | Result                 |
-| ----------- | ------------------------ | ---------------------- |
-| Superscript | `<sup>superscript</sup>` | <sup>superscript</sup> |
-| Subscript   | `<sub>subscript</sub>`   | <sub>subscript</sub>   |
-
-## Linking to pages
-
-You can add a link by wrapping text in `[]()`. You would write `[link to google](https://google.com)` to [link to google](https://google.com).
-
-Links to pages in your docs need to be root-relative. Basically, you should include the entire folder path. For example, `[link to text](/writing-content/text)` links to the page "Text" in our components section.
-
-Relative links like `[link to text](../text)` will open slower because we cannot optimize them as easily.
-
-## Blockquotes
-
-### Singleline
-
-To create a blockquote, add a `>` in front of a paragraph.
-
-> Dorothy followed her through many of the beautiful rooms in her castle.
-
-```md
-> Dorothy followed her through many of the beautiful rooms in her castle.
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())
 ```
 
-### Multiline
 
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
-> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
+```javascript JavaScript
+const url = 'https://api.runblob.io/v1/veo/generate';
+const headers = {
+  'Authorization': 'Bearer YOUR_API_KEY',
+  'Content-Type': 'application/json'
+};
 
-```md
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
-> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
+const payload = {
+  prompt: 'A cat playing with a ball in a sunny room',
+  model_type: 'veo-3-fast',
+  seed: 1234
+};
+
+const response = await fetch(url, {
+  method: 'POST',
+  headers: headers,
+  body: JSON.stringify(payload)
+});
+
+const result = await response.json();
+console.log(result);
 ```
 
-### LaTeX
 
-Mintlify supports [LaTeX](https://www.latex-project.org) through the Latex component.
-
-<Latex>8 x (vk x H1 - H2) = (0,1)</Latex>
-
-```md
-<Latex>8 x (vk x H1 - H2) = (0,1)</Latex>
+```bash Image-to-Video
+curl -X POST https://api.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "The scene comes alive with movement",
+    "model_type": "veo-3-fast",
+    "bytes_image": "base64_encoded_image_here"
+  }'
 ```
+
+
+```bash Frame-to-Frame
+curl -X POST https://api.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Smooth transition between frames",
+    "model_type": "veo-3-fast",
+    "start_frame": "base64_encoded_start_frame",
+    "end_frame": "base64_encoded_end_frame"
+  }'
+```
+
+
+```bash Reference Images
+curl -X POST https://api.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A cinematic scene in this style",
+    "model_type": "veo-3-fast",
+    "reference_images": [
+      "base64_encoded_image_1",
+      "base64_encoded_image_2"
+    ]
+  }'
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Task created successfully",
+  "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}
+```
+
+---
+
+## Generation Modes
+
+The API supports 4 generation modes - **only one mode can be used per request:**
+
+<CardGroup cols={2}>
+  <Card title="Text-to-Video" icon="text">
+    Generate video from text prompt only (no images).
+
+    **Models:** `veo-3-fast`, `veo-3-quality`
+  </Card>
+  <Card title="Image-to-Video" icon="image">
+    Animate a single image with text prompt using `bytes_image` parameter.
+
+    **Formats:** JPEG, PNG, WEBP\
+    **Max size:** 20 MB\
+    **Models:** `veo-3-fast`, `veo-3-quality`
+  </Card>
+  <Card title="Frame-to-Frame" icon="layer-group">
+    Generate smooth transition between two frames using `start_frame` and `end_frame` parameters.
+
+    **Both frames are required**\
+    **Models:** `veo-3-fast`, `veo-3-quality`
+  </Card>
+  <Card title="Reference Images" icon="images">
+    Generate video guided by 1-3 reference images using `reference_images` parameter.
+
+    **1-3 images** (JPEG, PNG, WEBP, max 20 MB each)\
+    **Only works with** `veo-3-fast`
+  </Card>
+</CardGroup>
+
+<Warning>
+  **Validation:** Only one mode per request. You cannot combine `bytes_image`, `start_frame/end_frame`, and `reference_images` in the same request.
+</Warning>
+
+---
+
+## Check Status
+
+Monitor video generation progress
+
+### Endpoint
+
+```
+GET /v1/veo/status/{task_id}
+```
+
+Check the current status of your video generation task.
+
+### Path Parameters
+
+<ParamField path="task_id" type="string" required>
+  Task UUID returned from the generate endpoint
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://api.runblob.io/v1/veo/status/a1b2c3d4-e5f6-7890 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+
+```python Python
+import requests
+
+task_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+url = f"https://api.runblob.io/v1/veo/status/{task_id}"
+
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+
+```javascript JavaScript
+const taskId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const url = `https://api.runblob.io/v1/veo/status/${taskId}`;
+
+const headers = {
+  'Authorization': 'Bearer YOUR_API_KEY'
+};
+
+const response = await fetch(url, { headers });
+const result = await response.json();
+console.log(result);
+```
+
+</CodeGroup>
+
+### Response
+
+<Tabs>
+  <Tab title="Completed">
+    ```json
+    {
+      "status": "completed",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "Task completed successfully",
+      "video_url": "https://your-video.mp4"
+    }
+    ```
+  </Tab>
+  <Tab title="Processing">
+    ```json
+    {
+      "status": "processing",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "Video generation in progress",
+      "progress": 45
+    }
+    ```
+  </Tab>
+  <Tab title="Failed">
+    ```json
+    {
+      "status": "failed",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "Generation failed: Invalid prompt",
+      "error": "INVALID_PROMPT"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Status Values
+
+| Status       | Description                               |
+| ------------ | ----------------------------------------- |
+| `pending`    | Task is queued and waiting to start       |
+| `processing` | Video generation is in progress           |
+| `completed`  | Video is ready and available for download |
+| `failed`     | Generation failed (see error message)     |
+
+---
+
+## Need Help?
+
+<Card icon="paper-plane" iconType="duotone">
+  **Have questions about Veo 3 API?** Contact our support team via [Telegram](https://t.me/runblob_support) for assistance.
+
+  We're here to help you 24/7! 🚀
+</Card>
