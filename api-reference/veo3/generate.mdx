@@ -1,0 +1,209 @@
+---
+title: "Generate Video"
+description: "Create videos from text prompts using Veo3"
+---
+
+<Info>
+  **Base URL:** `https://platform.runblob.io`
+</Info>
+
+## POST /v1/veo/generate
+
+Creates a video generation task from text description using Google Veo3.
+
+<ParamField path="prompt" type="string" required>
+  Text description of the video (10-4000 characters)
+</ParamField>
+
+<ParamField path="model_type" type="string" default="veo-3-fast">
+  Model version: `"veo-3-fast"` or `"veo-3-quality"`
+</ParamField>
+
+<ParamField path="seed" type="number">
+  Reproducibility seed (1-10000)
+</ParamField>
+
+<ParamField path="callback_url" type="string">
+  Webhook URL for completion notifications
+</ParamField>
+
+<ParamField path="bytes_image" type="string">
+  Base64-encoded image for image-to-video (max 20MB, JPEG/PNG/WEBP)
+</ParamField>
+
+<ParamField path="start_frame" type="string">
+  Base64-encoded start frame for Frame-to-Frame mode (requires `end_frame`)
+</ParamField>
+
+<ParamField path="end_frame" type="string">
+  Base64-encoded end frame for Frame-to-Frame mode (requires `start_frame`)
+</ParamField>
+
+<ParamField path="reference_images" type="array">
+  Array of 1-3 base64-encoded images for reference-based generation (only `veo-3-fast` supported)
+</ParamField>
+
+<ParamField path="filter_text" type="string">
+  Content filtering options: `"moderate"`, `"translate"`, `"moderate_translate"`
+</ParamField>
+
+<ParamField path="aspect_ratio" type="string" default="16:9">
+  Video aspect ratio: `"9:16"` or `"16:9"`.
+</ParamField>
+
+<CodeGroup>
+
+```bash Text-to-Video
+curl -X POST https://platform.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A cat playing with a ball in a sunny room",
+    "model_type": "veo-3-fast",
+    "seed": 1234
+  }'
+```
+
+```bash Image-to-Video
+curl -X POST https://platform.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "The character starts walking forward slowly",
+    "model_type": "veo-3-fast",
+    "bytes_image": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+```bash Frame-to-Frame
+curl -X POST https://platform.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Smooth transformation between frames",
+    "model_type": "veo-3-fast",
+    "start_frame": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+    "end_frame": "data:image/jpeg;base64,iVBORw0KGgoAAAANS...",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+```bash Reference Images
+curl -X POST https://platform.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Characters celebrating a birthday party",
+    "model_type": "veo-3-fast",
+    "reference_images": [
+      "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+      "data:image/jpeg;base64,iVBORw0KGgoAAAANS..."
+    ],
+    "aspect_ratio": "16:9"
+  }'
+```
+
+```python Python
+import requests
+
+# Text-to-Video
+response = requests.post(
+    "https://platform.runblob.io/v1/veo/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "A cat playing with a ball in a sunny room",
+        "model_type": "veo-3-fast"
+    }
+)
+
+# Frame-to-Frame
+response = requests.post(
+    "https://platform.runblob.io/v1/veo/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Smooth transformation",
+        "model_type": "veo-3-fast",
+        "start_frame": "data:image/jpeg;base64,...",
+        "end_frame": "data:image/jpeg;base64,...",
+        "aspect_ratio": "16:9"
+    }
+)
+
+# Reference Images
+response = requests.post(
+    "https://platform.runblob.io/v1/veo/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Characters celebrating",
+        "model_type": "veo-3-fast",
+        "reference_images": [
+            "data:image/jpeg;base64,...",
+            "data:image/jpeg;base64,..."
+        ]
+    }
+)
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Task created successfully",
+  "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}
+```
+
+<Note>
+  Video generation typically takes 1-10 minutes. Use the `task_id` to check status or set up webhooks for notifications.
+</Note>
+
+## Generation Modes
+
+The API supports **4 generation modes** - only one mode can be used per request:
+
+### 1. Text-to-Video
+Generate video from text prompt only (no images).
+
+**Models:** `veo-3-fast`, `veo-3-quality`
+
+### 2. Image-to-Video
+Animate a single image with text prompt using `bytes_image` parameter.
+
+- Formats: JPEG, PNG, WEBP
+- Max size: 20 MB
+- Models: `veo-3-fast`, `veo-3-quality`
+
+### 3. Frame-to-Frame
+Generate smooth transition between two frames using `start_frame` and `end_frame` parameters.
+
+- Both frames are **required**
+- Models: `veo-3-fast`, `veo-3-quality`
+
+<Warning>
+  Frame-to-Frame requires **both** `start_frame` and `end_frame`. Using only one will result in an error.
+</Warning>
+
+### 4. Reference Images
+Generate video guided by 1-3 reference images using `reference_images` parameter.
+
+- 1-3 images supported (JPEG, PNG, WEBP, max 20 MB each)
+- **Only works with `veo-3-fast`**
+
+<Info>
+  **Validation:** Only one mode per request. You cannot combine `bytes_image`, `start_frame/end_frame`, and `reference_images` in the same request.
+</Info>
+
+

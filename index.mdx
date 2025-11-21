@@ -1,352 +1,55 @@
 ---
-
-title: "runblob API"
-
-description: "Leading AI video generation platform with enterprise-grade reliability"
-
+title: "RunBlob API"
+description: "Transform text into professional videos with AI. Powered by Google Veo3."
 ---
 
-## Why runblob?
+## Transform Ideas into Videos
 
-One of the largest AI video generation platforms on the market, trusted by thousands of developers worldwide.
-
-<CardGroup cols={2}>
-
-  <Card title="Lightning-fast API responses" icon="bolt">
-
-    Optimized generation times and instant API responses
-
-  </Card>
-
-  <Card title="Round-the-clock support" icon="headset">
-
-    Professional technical support available 24/7
-
-  </Card>
-
-  <Card title="Most competitive pricing" icon="dollar-sign">
-
-    Industry-leading rates with flexible credit system
-
-  </Card>
-
-  <Card title="Enterprise scale" icon="rocket">
-
-    Handle millions of requests with 99.9% uptime
-
-  </Card>
-
-</CardGroup>
-
-## AI Models Available
-
-Access the most powerful video generation models through a single API.
+RunBlob makes video creation effortless. Simply describe what you want, and our AI generates professional-quality videos in minutes.
 
 <CardGroup cols={3}>
-
-  <Card title="Veo 3.1" icon="video" href="/video/veo31">
-
-    Google DeepMind's latest breakthrough in professional video generation
-
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get your first video in 3 steps
   </Card>
-
-  {/* <Card title="Sora 2" icon="wand-magic-sparkles" href="/video/sora2">
-
-    OpenAI's revolutionary text-to-video model with unprecedented realism
-
+  <Card title="API Reference" icon="code" href="/api-reference/veo3/generate">
+    Complete endpoint documentation
   </Card>
-
-  <Card title="Kling" icon="sparkles" href="/video/kling">
-
-    High-quality video generation with excellent scene understanding
-
-  </Card> */}
-
+  <Card title="Examples" icon="lightbulb" href="/api-reference/veo3/examples">
+    Ready-to-use code snippets
+  </Card>
 </CardGroup>
 
+## How It Works
+
+<Steps>
+  <Step title="Authenticate">
+    Get your API key and start making requests
+  </Step>
+  <Step title="Generate">
+    Send a text prompt to create your video
+  </Step>
+  <Step title="Download">
+    Receive your professional video in minutes
+  </Step>
+</Steps>
+
+## Key Features
+
+<AccordionGroup>
+  <Accordion icon="video" title="High-Quality Videos">
+    Powered by Google's Veo3 model for professional results
+  </Accordion>
+  <Accordion icon="clock" title="Fast Generation">
+    Videos ready in 1-10 minutes with automatic scaling
+  </Accordion>
+  <Accordion icon="webhook" title="Real-time Notifications">
+    Get instant updates via webhooks when videos are ready
+  </Accordion>
+  <Accordion icon="shield" title="Enterprise Ready">
+    Reliable API with comprehensive error handling
+  </Accordion>
+</AccordionGroup>
+
 <Note>
-
-  **🌟 Nano Banano 2 — Coming Very Soon**
-
-  Be the first to access the next generation AI model. Exclusively on runblob. Stay tuned for updates.
-
+  **Ready to start?** Generate your first video with our [quickstart guide](/quickstart) or explore the [API documentation](/api-reference/veo3/generate).
 </Note>
-
-## Get Started
-
-<Card title="Quick Start Guide" icon="rocket" horizontal href="/authentication">
-
-  Get your API key and make your first video in 3 minutes
-
-</Card>
-
-## Integration Made Simple
-
-Everything you need to integrate AI video generation into your application.
-
-<Columns cols={2}>
-
-  <Card title="Authentication" icon="key" href="/authentication">
-
-    Get your API key and learn how to authenticate requests
-
-  </Card>
-
-  <Card title="Veo 3.1 Guide" icon="video" href="/video/veo31">
-
-    Generate professional videos with Google's Veo 3.1
-
-  </Card>
-
-  {/* <Card title="Sora 2 Guide" icon="wand-magic-sparkles" href="/video/sora2">
-
-    Create stunning videos with OpenAI's Sora 2
-
-  </Card>
-
-  <Card title="Kling Guide" icon="sparkles" href="/video/kling">
-
-    High-quality video generation with Kling AI
-
-  </Card> */}
-
-</Columns>
-
-## Developer Resources
-
-Build faster with our comprehensive documentation and tools.
-
-<Columns cols={2}>
-
-  <Card title="API Reference" icon="code" href="/api-reference/introduction">
-
-    Complete API documentation with interactive examples
-
-  </Card>
-
-  <Card title="Pricing" icon="dollar-sign" href="/pricing">
-
-    Transparent pricing with flexible credit system
-
-  </Card>
-
-  <Card title="Code Examples" icon="terminal" href="/video/veo31">
-
-    Ready-to-use code samples in multiple languages
-
-  </Card>
-
-  <Card title="24/7 Support" icon="headset" href="mailto:support@runblob.com">
-
-    Get help from our technical team anytime
-
-  </Card>
-
-</Columns>
-
-## Example: Generate Your First Video
-
-Choose your preferred language and start generating:
-
-<CodeGroup>
-
-```python Python
-
-import requests
-
-import time
-
-class VeoClient:
-
-    def __init__(self, api_key):
-
-        self.api_key = api_key
-
-        self.base_url = "https://api.runblob.io"
-
-        self.headers = {
-
-            "Authorization": f"Bearer {api_key}",
-
-            "Content-Type": "application/json"
-
-        }
-
-    
-
-    def generate(self, prompt, **kwargs):
-
-        response = requests.post(
-
-            f"{self.base_url}/api/veo/generate",
-
-            headers=self.headers,
-
-            json={"prompt": prompt, **kwargs}
-
-        )
-
-        return response.json()
-
-    
-
-    def generate_frame_to_frame(self, prompt, start_frame, end_frame, **kwargs):
-
-        response = requests.post(
-
-            f"{self.base_url}/api/veo/generate",
-
-            headers=self.headers,
-
-            json={
-
-                "prompt": prompt,
-
-                "start_frame": start_frame,
-
-                "end_frame": end_frame,
-
-                "model_type": "veo-3-fast",
-
-                **kwargs
-
-            }
-
-        )
-
-        return response.json()
-
-    
-
-    def generate_with_references(self, prompt, reference_images, **kwargs):
-
-        response = requests.post(
-
-            f"{self.base_url}/api/veo/generate",
-
-            headers=self.headers,
-
-            json={
-
-                "prompt": prompt,
-
-                "reference_images": reference_images,
-
-                "model_type": "veo-3-fast",
-
-                **kwargs
-
-            }
-
-        )
-
-        return response.json()
-
-    
-
-    def status(self, task_id):
-
-        response = requests.get(
-
-            f"{self.base_url}/api/veo/status/{task_id}",
-
-            headers=self.headers
-
-        )
-
-        return response.json()
-
-    
-
-    def wait_for_completion(self, task_id):
-
-        while True:
-
-            result = self.status(task_id)
-
-            if result["status"] == "completed":
-
-                return result["video_url"]
-
-            elif result["status"] == "failed":
-
-                raise Exception(f"Generation failed: {result['message']}")
-
-            time.sleep(10)
-
-# Text-to-Video
-
-client = VeoClient("YOUR_API_KEY")
-
-result = client.generate("A sunset over mountains")
-
-video_url = client.wait_for_completion(result["task_id"])
-
-print(f"Video ready: {video_url}")
-
-# Frame-to-Frame
-
-result = client.generate_frame_to_frame(
-
-    "Smooth transformation",
-
-    start_frame="data:image/jpeg;base64,...",
-
-    end_frame="data:image/jpeg;base64,...",
-
-    aspect_ratio="16:9"
-
-)
-
-video_url = client.wait_for_completion(result["task_id"])
-
-# Reference Images
-
-result = client.generate_with_references(
-
-    "Characters celebrating birthday",
-
-    reference_images=[
-
-        "data:image/jpeg;base64,...",
-
-        "data:image/jpeg;base64,..."
-
-    ],
-
-    aspect_ratio="16:9"
-
-)
-
-video_url = client.wait_for_completion(result["task_id"])
-
-```
-
-```javascript JavaScript
-
-```
-
-```bash cURL
-
-curl -X POST https://api.runblob.io/api/veo/generate \
-
-  -H "Authorization: Bearer YOUR_API_KEY" \
-
-  -H "Content-Type: application/json" \
-
-  -d '{
-
-    "prompt": "A cat playing with a ball in a sunny room"
-
-  }'
-
-```
-
-</CodeGroup>
-
-<Card title="View Complete Documentation" icon="book-open" href="/video/veo31">
-
-  See detailed guides, advanced parameters, and best practices
-
-</Card>
-

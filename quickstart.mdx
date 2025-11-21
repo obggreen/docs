@@ -1,0 +1,102 @@
+---
+title: "Quickstart"
+description: "Generate your first video in 3 simple steps"
+---
+
+<Steps>
+  <Step title="Get API Key">
+    Sign up and get your API key from RunBlob dashboard.
+    
+    <Info>
+      All requests require Bearer authentication with your API key.
+    </Info>
+  </Step>
+
+  <Step title="Generate Video">
+    Create a video generation task with a text prompt.
+
+    <CodeGroup>
+    ```bash cURL
+    curl -X POST https://platform.runblob.io/v1/veo/generate \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "prompt": "A cat playing with a ball in a sunny room"
+      }'
+    ```
+
+    ```python Python
+    import requests
+
+    response = requests.post(
+        "https://platform.runblob.io/v1/veo/generate",
+        headers={
+            "Authorization": "Bearer YOUR_API_KEY",
+            "Content-Type": "application/json"
+        },
+        json={"prompt": "A cat playing with a ball in a sunny room"}
+    )
+    result = response.json()
+    print(f"Task ID: {result['task_id']}")
+    ```
+    </CodeGroup>
+
+    **Response:**
+    ```json
+    {
+      "success": true,
+      "message": "Task created successfully",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    }
+    ```
+  </Step>
+
+  <Step title="Check Status">
+    Monitor your video generation progress using the task ID.
+
+    <CodeGroup>
+    ```bash cURL
+    curl -X GET https://platform.runblob.io/v1/veo/status/a1b2c3d4-e5f6-7890 \
+      -H "Authorization: Bearer YOUR_API_KEY"
+    ```
+
+    ```python Python
+    import requests
+    import time
+
+    task_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    
+    while True:
+        response = requests.get(
+            f"https://platform.runblob.io/v1/veo/status/{task_id}",
+            headers={"Authorization": "Bearer YOUR_API_KEY"}
+        )
+        result = response.json()
+        
+        if result["status"] == "completed":
+            print(f"Video ready: {result['video_url']}")
+            break
+        elif result["status"] == "failed":
+            print(f"Generation failed: {result['message']}")
+            break
+        
+        print(f"Status: {result['status']}")
+        time.sleep(10)
+    ```
+    </CodeGroup>
+
+    **Completed Response:**
+    ```json
+    {
+      "status": "completed",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "Task completed successfully",
+      "video_url": "https://your-video.mp4"
+    }
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  Video generation typically takes 1-10 minutes. Consider using webhooks for automatic notifications instead of polling.
+</Note>

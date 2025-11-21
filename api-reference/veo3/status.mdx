@@ -1,0 +1,83 @@
+---
+title: "Check Status"
+description: "Monitor video generation progress"
+---
+
+## GET /v1/veo/status/{task_id}
+
+Check the current status of your video generation task.
+
+<ParamField path="task_id" type="string" required>
+  Task UUID returned from the generate endpoint
+</ParamField>
+
+<Accordion title="Status Values">
+  <ResponseField name="pending" type="string">
+    Task is in queue waiting to be processed
+  </ResponseField>
+  <ResponseField name="processing" type="string">
+    Video is currently being generated
+  </ResponseField>
+  <ResponseField name="completed" type="string">
+    Video generation completed successfully
+  </ResponseField>
+  <ResponseField name="failed" type="string">
+    Video generation failed with error
+  </ResponseField>
+</Accordion>
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://platform.runblob.io/v1/veo/status/a1b2c3d4-e5f6-7890 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://platform.runblob.io/v1/veo/status/a1b2c3d4-e5f6-7890",
+    headers={"Authorization": "Bearer YOUR_API_KEY"}
+)
+```
+
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Completed">
+    ```json
+    {
+      "status": "completed",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "Task completed successfully",
+      "video_url": "https://your-video.mp4"
+    }
+    ```
+  </Tab>
+  <Tab title="Failed">
+    ```json
+    {
+      "status": "failed",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "UNSAFE_CONTENT",
+      "video_url": null
+    }
+    ```
+  </Tab>
+  <Tab title="Processing">
+    ```json
+    {
+      "status": "processing",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "Task is being processed"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+  Tasks timeout after 10 minutes. Failed tasks return specific error codes in the `message` field.
+</Warning>
+
+

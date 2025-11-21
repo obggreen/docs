@@ -1,0 +1,242 @@
+---
+title: "Webhooks"
+description: "Real-time notifications for video generation events"
+---
+
+<Info>
+  Webhooks provide instant notifications when your video generation tasks complete, fail, or timeout. No more polling!
+</Info>
+
+## Setup Guide
+
+<Steps>
+  <Step title="Create Webhook Endpoint">
+    Set up an HTTPS endpoint that can receive POST requests.
+    
+    ```python
+    from flask import Flask, request, jsonify
+    
+    app = Flask(__name__)
+    
+    @app.route('/webhook', methods=['POST'])
+    def handle_webhook():
+        data = request.json
+        
+        if data['success']:
+            print(f"Video ready: {data['video_url']}")
+        else:
+            print(f"Generation failed: {data['message']}")
+            
+        return jsonify({'status': 'received'}), 200
+    ```
+  </Step>
+  
+  <Step title="Add Webhook URL">
+    Include your webhook URL when creating a generation task.
+    
+    ```bash
+    curl -X POST https://platform.runblob.io/v1/veo/generate \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "prompt": "A sunset over mountains",
+        "callback_url": "https://your-app.com/webhook"
+      }'
+    ```
+  </Step>
+  
+  <Step title="Handle Notifications">
+    Your endpoint will receive instant notifications when tasks complete.
+  </Step>
+</Steps>
+
+## Payload Structure
+
+<Tabs>
+  <Tab title="Success">
+    Sent when video generation completes successfully.
+    
+    ```json
+    {
+      "success": true,
+      "message": "Task completed successfully",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "video_url": "https://cdn.runblob.io/videos/your-video.mp4"
+    }
+    ```
+    
+    <ResponseField name="success" type="boolean">
+      Always `true` for successful generations
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Human-readable success message
+    </ResponseField>
+    <ResponseField name="task_id" type="string">
+      UUID of the completed task
+    </ResponseField>
+    <ResponseField name="video_url" type="string">
+      Direct download URL for the generated video
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Failed">
+    Sent when video generation fails with specific error codes.
+    
+    ```json
+    {
+      "success": false,
+      "message": "UNSAFE_CONTENT",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "video_url": null
+    }
+    ```
+    
+    <ResponseField name="success" type="boolean">
+      Always `false` for failed generations
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Machine-readable error code (see [Error Codes](/api-reference/veo3/errors))
+    </ResponseField>
+    <ResponseField name="task_id" type="string">
+      UUID of the failed task
+    </ResponseField>
+    <ResponseField name="video_url" type="null">
+      Always `null` for failed tasks
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Timeout">
+    Sent when generation exceeds the 10-minute limit.
+    
+    ```json
+    {
+      "success": false,
+      "message": "TIMEOUT",
+      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "video_url": null
+    }
+    ```
+    
+    <Note>
+      Credits are automatically refunded for timed-out tasks.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Reliability Features
+
+<AccordionGroup>
+  <Accordion icon="repeat" title="Automatic Retries">
+    **Retry Policy:** Up to 5 attempts with 30-second intervals
+    
+    **Backoff Strategy:** Linear backoff between retries
+    
+    **Failure Handling:** After 5 failed attempts, the webhook is marked as failed
+  </Accordion>
+  
+  <Accordion icon="clock" title="Timeout Handling">
+    **Request Timeout:** 30 seconds per webhook request
+    
+    **Connection Timeout:** 10 seconds to establish connection
+    
+    **Best Practice:** Respond quickly with a 200 status code
+  </Accordion>
+  
+  <Accordion icon="shield-check" title="Security">
+    **HTTPS Required:** All webhook URLs must use HTTPS
+    
+    **IP Allowlist:** Consider restricting access to RunBlob's IP ranges
+    
+    **Validation:** Always validate the task_id in your webhook handler
+  </Accordion>
+</AccordionGroup>
+
+## Example Implementations
+
+<CodeGroup>
+
+```python Flask
+from flask import Flask, request, jsonify
+import logging
+
+app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+
+@app.route('/webhook', methods=['POST'])
+def runblob_webhook():
+    try:
+        data = request.json
+        task_id = data.get('task_id')
+        
+        if data.get('success'):
+            video_url = data.get('video_url')
+            logging.info(f"Video ready for task {task_id}: {video_url}")
+            # Process successful generation
+            process_video(task_id, video_url)
+        else:
+            error_code = data.get('message')
+            logging.error(f"Generation failed for task {task_id}: {error_code}")
+            # Handle failure
+            handle_failure(task_id, error_code)
+        
+        return jsonify({'status': 'received'}), 200
+    except Exception as e:
+        logging.error(f"Webhook error: {str(e)}")
+        return jsonify({'error': 'Internal error'}), 500
+
+def process_video(task_id, video_url):
+    # Your video processing logic here
+    pass
+
+def handle_failure(task_id, error_code):
+    # Your error handling logic here
+    pass
+```
+
+```javascript Express.js
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/webhook', (req, res) => {
+  try {
+    const { success, task_id, video_url, message } = req.body;
+    
+    if (success) {
+      console.log(`Video ready for task ${task_id}: ${video_url}`);
+      // Process successful generation
+      processVideo(task_id, video_url);
+    } else {
+      console.error(`Generation failed for task ${task_id}: ${message}`);
+      // Handle failure
+      handleFailure(task_id, message);
+    }
+    
+    res.status(200).json({ status: 'received' });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+function processVideo(taskId, videoUrl) {
+  // Your video processing logic here
+}
+
+function handleFailure(taskId, errorCode) {
+  // Your error handling logic here
+}
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});
+```
+
+</CodeGroup>
+
+<Warning>
+  **Important:** Always return a 200 status code quickly to acknowledge receipt. Perform heavy processing asynchronously to avoid timeouts.
+</Warning>
+
+

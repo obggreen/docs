@@ -1,0 +1,215 @@
+---
+title: "Error Codes"
+description: "Comprehensive error handling guide with machine-readable codes"
+---
+
+<Info>
+  All errors return specific codes in the `message` field for programmatic handling.
+</Info>
+
+## Error Categories
+
+<Tabs>
+  <Tab title="User Errors">
+    Issues caused by invalid requests or insufficient resources.
+    
+    <AccordionGroup>
+      <Accordion icon="credit-card" title="INSUFFICIENT_CREDITS">
+        **Description:** Not enough credits to complete the request
+        
+        **Solution:** Add more credits to your account
+        
+        ```json
+        {
+          "success": false,
+          "message": "INSUFFICIENT_CREDITS"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="question-circle" title="TASK_NOT_FOUND">
+        **Description:** Task with specified ID does not exist
+        
+        **Solution:** Verify the task ID is correct
+        
+        ```json
+        {
+          "detail": "TASK_NOT_FOUND"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="id-badge" title="INVALID_TASK_ID">
+        **Description:** Task ID format is invalid (must be valid UUID)
+        
+        **Solution:** Use the task ID returned from generate endpoint
+      </Accordion>
+      
+      <Accordion icon="image" title="INVALID_IMAGE">
+        **Description:** Uploaded file is not a valid image
+        
+        **Solution:** Ensure you're uploading a valid JPEG, PNG, or WEBP file
+      </Accordion>
+      
+      <Accordion icon="weight-scale" title="IMAGE_TOO_LARGE">
+        **Description:** Image file size exceeds 20MB limit
+        
+        **Solution:** Compress your image or use a smaller file
+      </Accordion>
+      
+      <Accordion icon="file-image" title="UNSUPPORTED_IMAGE_FORMAT">
+        **Description:** Image format not supported
+        
+        **Solution:** Convert to JPEG, PNG, or WEBP format
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  
+  <Tab title="Content Errors">
+    Issues with prompt content or uploaded images.
+    
+    <AccordionGroup>
+      <Accordion icon="shield-exclamation" title="UNSAFE_CONTENT">
+        **Description:** Content detected as unsafe by Google's safety filters
+        
+        **Solution:** Modify your prompt to remove potentially harmful content
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "UNSAFE_CONTENT"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="language" title="NON_ENGLISH_PROMPT">
+        **Description:** Prompt contains non-English text (Google Veo3 limitation)
+        
+        **Solution:** Translate your prompt to English
+      </Accordion>
+      
+      <Accordion icon="user-shield" title="PROMINENT_PEOPLE_UPLOAD">
+        **Description:** Image contains recognizable prominent people
+        
+        **Solution:** Use images without recognizable public figures
+      </Accordion>
+      
+      <Accordion icon="user-check" title="PHOTOREAL_UPLOAD">
+        **Description:** Image contains photorealistic people
+        
+        **Solution:** Google randomly rejects ~50% of such images - try different images
+      </Accordion>
+      
+      <Accordion icon="shield-slash" title="MODERATION_FAILED">
+        **Description:** Content rejected by RunBlob moderation system
+        
+        **Solution:** Modify your content to comply with our guidelines
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  
+  <Tab title="System Errors">
+    Technical issues on RunBlob or Google's side.
+    
+    <AccordionGroup>
+      <Accordion icon="clock" title="TIMEOUT">
+        **Description:** Task exceeded maximum processing time (10 minutes)
+        
+        **Action:** Credits are automatically refunded
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "TIMEOUT"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="wrench" title="MAINTENANCE">
+        **Description:** Service is temporarily unavailable for maintenance
+        
+        **Action:** Wait and retry your request later
+      </Accordion>
+      
+      <Accordion icon="google" title="GOOGLE_DECLINED">
+        **Description:** Google service declined the request
+        
+        **Action:** This is a system error, try again or contact support
+      </Accordion>
+      
+      <Accordion icon="ban" title="TASK_FAILED">
+        **Description:** Google interrupted generation after detecting unacceptable content during processing
+        
+        **Action:** Modify your prompt to avoid content that violates policies, credits are refunded automatically
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+</Tabs>
+
+## Complete Error Reference
+
+<ResponseField name="INSUFFICIENT_CREDITS" type="User Error" icon="credit-card">
+  Not enough credits to complete the request
+</ResponseField>
+
+<ResponseField name="NON_ENGLISH_PROMPT" type="Content Error" icon="language">
+  Prompt contains non-English text (Google Veo3 limitation)
+</ResponseField>
+
+<ResponseField name="UNSAFE_CONTENT" type="Content Error" icon="shield-exclamation">
+  Content detected as unsafe by Google's safety filters
+</ResponseField>
+
+<ResponseField name="PROMINENT_PEOPLE_UPLOAD" type="Content Error" icon="user-shield">
+  Image contains recognizable prominent people
+</ResponseField>
+
+<ResponseField name="PHOTOREAL_UPLOAD" type="Content Error" icon="user-check">
+  Photorealistic people (Google randomly rejects ~50% of such images)
+</ResponseField>
+
+<ResponseField name="MODERATION_FAILED" type="Content Error" icon="shield-slash">
+  Content rejected by RunBlob moderation system
+</ResponseField>
+
+<ResponseField name="GOOGLE_DECLINED" type="System Error" icon="google">
+  Google service declined the request
+</ResponseField>
+
+<ResponseField name="TASK_FAILED" type="System Error" icon="ban">
+  Google interrupted generation after detecting unacceptable content during processing
+</ResponseField>
+
+<ResponseField name="TASK_NOT_FOUND" type="User Error" icon="question-circle">
+  Task with specified ID does not exist
+</ResponseField>
+
+<ResponseField name="INVALID_TASK_ID" type="User Error" icon="id-badge">
+  Task ID format is invalid (must be valid UUID)
+</ResponseField>
+
+<ResponseField name="TIMEOUT" type="System Error" icon="clock">
+  Task exceeded maximum processing time (10 minutes)
+</ResponseField>
+
+<ResponseField name="MAINTENANCE" type="System Error" icon="wrench">
+  Service is temporarily unavailable for maintenance
+</ResponseField>
+
+<ResponseField name="INVALID_IMAGE" type="User Error" icon="image">
+  Uploaded file is not a valid image
+</ResponseField>
+
+<ResponseField name="IMAGE_TOO_LARGE" type="User Error" icon="weight-scale">
+  Image file size exceeds 20MB limit
+</ResponseField>
+
+<ResponseField name="UNSUPPORTED_IMAGE_FORMAT" type="User Error" icon="file-image">
+  Image format not supported (only JPEG, PNG, WEBP allowed)
+</ResponseField>
+
+<Warning>
+  Always handle errors programmatically using the error codes, not human-readable messages.
+</Warning>
+
+

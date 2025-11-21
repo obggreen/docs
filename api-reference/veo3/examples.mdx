@@ -1,0 +1,147 @@
+---
+title: "Code Examples"
+description: "Ready-to-use code snippets for Veo3 integration"
+---
+
+## cURL
+
+### Text-to-Video
+```bash
+curl -X POST https://plaform.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A cat playing with a ball in a sunny room"
+  }'
+```
+
+### Frame-to-Frame
+```bash
+curl -X POST https://platform.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Smooth transformation between two states",
+    "model_type": "veo-3-fast",
+    "start_frame": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+    "end_frame": "data:image/jpeg;base64,iVBORw0KGgoAAAANS...",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+### Reference Images
+```bash
+curl -X POST https://platform.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Characters celebrating a birthday",
+    "model_type": "veo-3-fast",
+    "reference_images": [
+      "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+      "data:image/jpeg;base64,iVBORw0KGgoAAAANS..."
+    ]
+  }'
+```
+
+### Check Status
+```bash
+curl -X GET https://platform.runblob.io/v1/veo/status/TASK_ID \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Python
+
+### Simple Client
+```python
+import requests
+import time
+
+class VeoClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://platform.runblob.io"
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    
+    def generate(self, prompt, **kwargs):
+        response = requests.post(
+            f"{self.base_url}/v1/veo/generate",
+            headers=self.headers,
+            json={"prompt": prompt, **kwargs}
+        )
+        return response.json()
+    
+    def generate_frame_to_frame(self, prompt, start_frame, end_frame, **kwargs):
+        response = requests.post(
+            f"{self.base_url}/v1/veo/generate",
+            headers=self.headers,
+            json={
+                "prompt": prompt,
+                "start_frame": start_frame,
+                "end_frame": end_frame,
+                "model_type": "veo-3-fast",
+                **kwargs
+            }
+        )
+        return response.json()
+    
+    def generate_with_references(self, prompt, reference_images, **kwargs):
+        response = requests.post(
+            f"{self.base_url}/v1/veo/generate",
+            headers=self.headers,
+            json={
+                "prompt": prompt,
+                "reference_images": reference_images,
+                "model_type": "veo-3-fast",
+                **kwargs
+            }
+        )
+        return response.json()
+    
+    def status(self, task_id):
+        response = requests.get(
+            f"{self.base_url}/v1/veo/status/{task_id}",
+            headers=self.headers
+        )
+        return response.json()
+    
+    def wait_for_completion(self, task_id):
+        while True:
+            result = self.status(task_id)
+            if result["status"] == "completed":
+                return result["video_url"]
+            elif result["status"] == "failed":
+                raise Exception(f"Generation failed: {result['message']}")
+            time.sleep(10)
+
+# Text-to-Video
+client = VeoClient("YOUR_API_KEY")
+result = client.generate("A sunset over mountains")
+video_url = client.wait_for_completion(result["task_id"])
+print(f"Video ready: {video_url}")
+
+# Frame-to-Frame
+result = client.generate_frame_to_frame(
+    "Smooth transformation",
+    start_frame="data:image/jpeg;base64,...",
+    end_frame="data:image/jpeg;base64,...",
+    aspect_ratio="16:9"
+)
+video_url = client.wait_for_completion(result["task_id"])
+
+# Reference Images
+result = client.generate_with_references(
+    "Characters celebrating birthday",
+    reference_images=[
+        "data:image/jpeg;base64,...",
+        "data:image/jpeg;base64,..."
+    ],
+    aspect_ratio="16:9"
+)
+video_url = client.wait_for_completion(result["task_id"])
+```
+
+

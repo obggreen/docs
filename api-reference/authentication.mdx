@@ -1,0 +1,166 @@
+---
+title: "Authentication"
+description: "Secure API access with Bearer tokens"
+---
+
+<Info>
+  All RunBlob API requests require authentication using Bearer tokens. Keep your API keys secure and never expose them in client-side code.
+</Info>
+
+## Getting Your API Key
+
+<Steps>
+  <Step title="Sign Up">
+    Create your RunBlob account at our dashboard.
+  </Step>
+  
+  <Step title="Generate API Key">
+    Navigate to the API Keys section and generate a new key.
+    
+    <Warning>
+      Copy your API key immediately - it won't be shown again for security reasons.
+    </Warning>
+  </Step>
+  
+  <Step title="Store Securely">
+    Store your API key in environment variables or secure configuration.
+    
+    ```bash
+    export RUNBLOB_API_KEY="your-api-key-here"
+    ```
+  </Step>
+</Steps>
+
+## Using Your API Key
+
+### Required Headers
+
+Every API request must include these headers:
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token with your API key: `Bearer YOUR_API_KEY`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  Always set to `application/json` for POST requests
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://platform.runblob.io/v1/veo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A beautiful sunset over mountains"
+  }'
+```
+
+```python Python
+import requests
+
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(
+    "https://platfrom.runblob.io/v1/veo/generate",
+    headers=headers,
+    json={"prompt": "A beautiful sunset over mountains"}
+)
+```
+
+```javascript JavaScript
+const headers = {
+  'Authorization': 'Bearer YOUR_API_KEY',
+  'Content-Type': 'application/json'
+};
+
+const response = await fetch('https://platform.runblob.io/v1/veo/generate', {
+  method: 'POST',
+  headers: headers,
+  body: JSON.stringify({
+    prompt: 'A beautiful sunset over mountains'
+  })
+});
+```
+
+</CodeGroup>
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion icon="shield-check" title="Server-Side Only">
+    **Never expose API keys in:**
+    - Frontend JavaScript code
+    - Mobile app source code  
+    - Public repositories
+    - URL parameters
+    
+    **Always use server-side requests** for API calls.
+  </Accordion>
+  
+  <Accordion icon="key" title="Environment Variables">
+    Store API keys in environment variables:
+    
+    ```bash
+    # .env file
+    RUNBLOB_API_KEY=your-api-key-here
+    ```
+    
+    ```python
+    import os
+    api_key = os.getenv('RUNBLOB_API_KEY')
+    ```
+  </Accordion>
+  
+  <Accordion icon="rotate" title="Key Rotation">
+    **Regularly rotate your API keys:**
+    - Generate new keys periodically
+    - Revoke old keys after updating your applications
+    - Monitor key usage in your dashboard
+  </Accordion>
+  
+  <Accordion icon="eye" title="Monitor Usage">
+    **Track your API usage:**
+    - Monitor request patterns in your dashboard
+    - Set up alerts for unusual activity
+    - Review logs regularly
+  </Accordion>
+</AccordionGroup>
+
+## Error Responses
+
+### Invalid API Key
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid API key"
+}
+```
+
+### Missing Authorization Header
+
+```json
+{
+  "error": "Unauthorized", 
+  "message": "Authorization header required"
+}
+```
+
+### Malformed Authorization Header
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid authorization format. Use: Bearer YOUR_API_KEY"
+}
+```
+
+<Note>
+  **Need help?** Contact our support team via [Telegram](https://t.me/runblobsupport) if you have issues with authentication.
+</Note>
