@@ -1,0 +1,117 @@
+---
+title: "Check Status"
+description: "Monitor video generation progress"
+---
+
+## GET /v1/kling/generations/{generation_id}
+
+Check the current status of your video generation task.
+
+<ParamField path="generation_id" type="string" required>
+  Generation UUID returned from the generate endpoint
+</ParamField>
+
+<Accordion title="Status Values">
+  <ResponseField name="pending" type="string">
+    Task is in queue waiting to be processed
+  </ResponseField>
+  <ResponseField name="processing" type="string">
+    Video is currently being generated
+  </ResponseField>
+  <ResponseField name="completed" type="string">
+    Video generation completed successfully
+  </ResponseField>
+  <ResponseField name="failed" type="string">
+    Video generation failed with error
+  </ResponseField>
+</Accordion>
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://platform.runblob.io/v1/kling/generations/550e8400-e29b-41d4 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://platform.runblob.io/v1/kling/generations/550e8400-e29b-41d4",
+    headers={"Authorization": "Bearer YOUR_API_KEY"}
+)
+```
+
+```python Python with Polling
+import requests
+import time
+
+generation_id = "550e8400-e29b-41d4-a716-446655440000"
+
+while True:
+    response = requests.get(
+        f"https://platform.runblob.io/v1/kling/generations/{generation_id}",
+        headers={"Authorization": "Bearer YOUR_API_KEY"}
+    )
+    result = response.json()
+    
+    if result["status"] == "completed":
+        print(f"Video ready: {result['video_url']}")
+        break
+    elif result["status"] == "failed":
+        print(f"Generation failed")
+        break
+    
+    print(f"Status: {result['status']}")
+    time.sleep(10)
+```
+
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Completed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "completed",
+      "prompt": "A golden retriever running through a sunflower field",
+      "video_url": "https://cdn.runblob.io/videos/550e8400.mp4",
+      "created_at": "2025-11-22T10:30:00Z",
+      "completed_at": "2025-11-22T10:32:15Z",
+      "version": "2.5",
+      "duration": "5"
+    }
+    ```
+  </Tab>
+  <Tab title="Failed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "prompt": "A golden retriever running through a sunflower field",
+      "video_url": null,
+      "created_at": "2025-11-22T10:30:00Z",
+      "completed_at": "2025-11-22T10:31:00Z",
+      "version": "2.5",
+      "duration": "5"
+    }
+    ```
+  </Tab>
+  <Tab title="Processing">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "processing",
+      "prompt": "A golden retriever running through a sunflower field",
+      "created_at": "2025-11-22T10:30:00Z",
+      "version": "2.5",
+      "duration": "5"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+  Video generation typically takes 2-5 minutes. Use polling intervals of 5-10 seconds.
+</Warning>
+

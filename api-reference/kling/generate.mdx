@@ -1,0 +1,236 @@
+---
+title: "Generate Video"
+description: "Create videos from text prompts using Kling AI"
+---
+
+<Info>
+  **Base URL:** `https://platform.runblob.io`
+</Info>
+
+## POST /v1/kling/generate
+
+Creates a video generation task from text description using Kling AI models.
+
+<ParamField path="prompt" type="string" required>
+  Text description of the video (1-2500 characters)
+</ParamField>
+
+<ParamField path="negative_prompt" type="string">
+  What should NOT be in the video (max 2500 characters)
+</ParamField>
+
+<ParamField path="version" type="string" default="2.5">
+  Model version: `"1.6"`, `"2.1"`, `"2.1-master"`, `"2.5"`
+</ParamField>
+
+<ParamField path="mode" type="string" default="std">
+  Mode: `"std"` (Standard) or `"pro"` (Professional)
+</ParamField>
+
+<ParamField path="duration" type="string" default="5">
+  Duration: `"5"` (5 seconds) or `"10"` (10 seconds)
+</ParamField>
+
+<ParamField path="aspect_ratio" type="string" default="16:9">
+  Video aspect ratio: `"16:9"`, `"9:16"`, `"1:1"`
+</ParamField>
+
+<ParamField path="cfg_scale" type="number" default="0.5">
+  Creativity balance (0.0-1.0). **0.0** = maximum creativity, **1.0** = strict prompt following
+</ParamField>
+
+<ParamField path="seed" type="number">
+  Reproducibility seed (0-2147483647)
+</ParamField>
+
+<ParamField path="callback_url" type="string">
+  Webhook URL for completion notifications
+</ParamField>
+
+<ParamField path="image_base64" type="string">
+  Base64-encoded image for Image-to-Video (JPEG/PNG/WEBP)
+</ParamField>
+
+<ParamField path="image_url" type="string">
+  URL of image for Image-to-Video
+</ParamField>
+
+<CodeGroup>
+
+```bash Text-to-Video
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A golden retriever running through a sunflower field at sunset"
+  }'
+```
+
+```bash Advanced Text-to-Video
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A futuristic cyberpunk city with neon lights and flying cars",
+    "negative_prompt": "blurry, low quality, distorted",
+    "version": "1.6",
+    "mode": "pro",
+    "duration": "10",
+    "aspect_ratio": "16:9",
+    "cfg_scale": 0.7,
+    "seed": 12345
+  }'
+```
+
+```bash Image-to-Video (Base64)
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Animate this portrait with subtle movements and blinking",
+    "image_base64": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+    "version": "2.5",
+    "duration": "5",
+    "aspect_ratio": "9:16"
+  }'
+```
+
+```bash Image-to-Video (URL)
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Make this image come alive with motion",
+    "image_url": "https://example.com/my-image.jpg",
+    "version": "2.1-master",
+    "mode": "pro",
+    "duration": "10"
+  }'
+```
+
+```python Python
+import requests
+
+# Text-to-Video
+response = requests.post(
+    "https://platform.runblob.io/v1/kling/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "A golden retriever running through a sunflower field",
+        "version": "2.5"
+    }
+)
+
+# Image-to-Video
+response = requests.post(
+    "https://platform.runblob.io/v1/kling/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Animate this image",
+        "image_url": "https://example.com/image.jpg",
+        "version": "2.1-master",
+        "duration": "10"
+    }
+)
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "pending",
+  "price": "0.0250"
+}
+```
+
+<Note>
+  Video generation typically takes 2-5 minutes. Use the `generation_id` to check status or set up webhooks for notifications.
+</Note>
+
+## Generation Modes
+
+The API supports **2 generation modes**:
+
+### 1. Text-to-Video
+Generate video from text prompt only (no images).
+
+**Models:** `1.6`, `2.1-master`, `2.5`
+
+<Warning>
+  Version `2.1` (Pro) does NOT support text-to-video. It requires an input image.
+</Warning>
+
+### 2. Image-to-Video
+Animate a single image with text prompt using `image_base64` or `image_url` parameter.
+
+- Formats: JPEG, PNG, WEBP
+- Max size: ~10 MB
+- Models: `1.6`, `2.1`, `2.1-master`, `2.5`
+
+<Info>
+  **Important:** You cannot use both `image_base64` and `image_url` in the same request.
+</Info>
+
+## Model Versions
+
+### ⚡ Kling 2.5 Turbo (Default)
+- **Version:** `"2.5"`
+- **Modes:** `std`, `pro`
+- **Duration:** `5s`, `10s`
+- **Features:**
+  - Text-to-video ✅
+  - Image-to-video ✅
+  - Negative prompt ❌
+  - CFG Scale ❌
+- **Best for:** Fastest generation speed
+
+### 🚀 Kling 2.1 Master
+- **Version:** `"2.1-master"`
+- **Modes:** `std`, `pro`
+- **Duration:** `5s`, `10s`
+- **Features:**
+  - Text-to-video ✅
+  - Image-to-video ✅
+  - Negative prompt ✅
+  - CFG Scale ❌
+- **Best for:** High-quality text-to-video
+
+### 🎯 Kling 2.1 Pro
+- **Version:** `"2.1"`
+- **Modes:** `pro`
+- **Duration:** `5s`, `10s`
+- **Features:**
+  - Text-to-video ❌ (image required)
+  - Image-to-video ✅
+  - Negative prompt ✅
+  - CFG Scale ❌
+- **Best for:** Professional image animation
+
+### 📦 Kling 1.6
+- **Version:** `"1.6"`
+- **Modes:** `std`, `pro`
+- **Duration:** `5s`, `10s`
+- **Features:**
+  - Text-to-video ✅
+  - Image-to-video ✅
+  - Negative prompt ✅
+  - CFG Scale ✅
+- **Best for:** Maximum creative control
+
+<Accordion title="CFG Scale Guide">
+  **Creativity balance parameter (Kling 1.6 only):**
+  
+  - **0.0-0.3:** Maximum creativity, AI adds interpretations
+  - **0.4-0.6:** Balanced mode (recommended)
+  - **0.7-1.0:** Strict prompt following, minimal deviations
+</Accordion>
+

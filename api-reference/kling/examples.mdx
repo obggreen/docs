@@ -1,0 +1,351 @@
+---
+title: "Code Examples"
+description: "Ready-to-use code snippets for Kling AI integration"
+---
+
+## cURL
+
+### Simple Text-to-Video
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A golden retriever running through a sunflower field at sunset"
+  }'
+```
+
+### Advanced Text-to-Video
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A futuristic cyberpunk city with neon lights and flying cars",
+    "negative_prompt": "blurry, low quality, distorted, unrealistic",
+    "version": "1.6",
+    "mode": "pro",
+    "duration": "10",
+    "aspect_ratio": "16:9",
+    "cfg_scale": 0.7,
+    "seed": 12345,
+    "callback_url": "https://yourdomain.com/webhook"
+  }'
+```
+
+### Image-to-Video with URL
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Make this image come alive with motion",
+    "image_url": "https://example.com/my-image.jpg",
+    "version": "2.1-master",
+    "mode": "pro",
+    "duration": "10"
+  }'
+```
+
+### Check Status
+```bash
+curl -X GET https://platform.runblob.io/v1/kling/generations/GENERATION_ID \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Python
+
+### Simple Client
+```python
+import requests
+import time
+
+class KlingClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://platform.runblob.io"
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    
+    def generate(self, prompt, **kwargs):
+        response = requests.post(
+            f"{self.base_url}/v1/kling/generate",
+            headers=self.headers,
+            json={"prompt": prompt, **kwargs}
+        )
+        return response.json()
+    
+    def generate_from_image(self, prompt, image_url, **kwargs):
+        response = requests.post(
+            f"{self.base_url}/v1/kling/generate",
+            headers=self.headers,
+            json={
+                "prompt": prompt,
+                "image_url": image_url,
+                **kwargs
+            }
+        )
+        return response.json()
+    
+    def status(self, generation_id):
+        response = requests.get(
+            f"{self.base_url}/v1/kling/generations/{generation_id}",
+            headers=self.headers
+        )
+        return response.json()
+    
+    def wait_for_completion(self, generation_id, poll_interval=10):
+        while True:
+            result = self.status(generation_id)
+            if result["status"] == "completed":
+                return result["video_url"]
+            elif result["status"] == "failed":
+                raise Exception(f"Generation failed: {generation_id}")
+            time.sleep(poll_interval)
+
+# Text-to-Video
+client = KlingClient("YOUR_API_KEY")
+result = client.generate("A sunset over mountains")
+video_url = client.wait_for_completion(result["generation_id"])
+print(f"Video ready: {video_url}")
+
+# Image-to-Video
+result = client.generate_from_image(
+    "Animate this portrait",
+    image_url="https://example.com/image.jpg",
+    version="2.1-master",
+    duration="10"
+)
+video_url = client.wait_for_completion(result["generation_id"])
+```
+
+### Image-to-Video with Base64
+```python
+import base64
+import requests
+
+# Read and encode image
+with open("input_image.jpg", "rb") as f:
+    image_data = base64.b64encode(f.read()).decode("utf-8")
+
+# Create request
+response = requests.post(
+    "https://platform.runblob.io/v1/kling/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Animate this portrait with subtle movements and blinking",
+        "image_base64": f"data:image/jpeg;base64,{image_data}",
+        "version": "2.5",
+        "duration": "5",
+        "aspect_ratio": "9:16"
+    }
+)
+
+result = response.json()
+print(f"Generation ID: {result['generation_id']}")
+```
+
+### Advanced Usage with Error Handling
+```python
+import requests
+import time
+from typing import Optional
+
+class KlingAPI:
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base_url = "https://platform.runblob.io/v1/kling"
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    
+    def generate(self, prompt: str, version: str = "2.5", 
+                 duration: str = "5", **kwargs) -> dict:
+        """Create a new video generation."""
+        payload = {
+            "prompt": prompt,
+            "version": version,
+            "duration": duration,
+            **kwargs
+        }
+        
+        try:
+            response = requests.post(
+                f"{self.base_url}/generate",
+                headers=self.headers,
+                json=payload
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 402:
+                raise Exception("Insufficient credits")
+            elif e.response.status_code == 401:
+                raise Exception("Invalid API key")
+            else:
+                raise Exception(f"API Error: {e.response.text}")
+    
+    def get_status(self, generation_id: str) -> dict:
+        """Get generation status."""
+        try:
+            response = requests.get(
+                f"{self.base_url}/generations/{generation_id}",
+                headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                raise Exception("Generation not found")
+            raise Exception(f"API Error: {e.response.text}")
+    
+    def wait_for_completion(self, generation_id: str, 
+                          timeout: int = 600) -> Optional[str]:
+        """Wait for generation to complete with timeout."""
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            result = self.get_status(generation_id)
+            
+            if result["status"] == "completed":
+                return result["video_url"]
+            elif result["status"] == "failed":
+                raise Exception(f"Generation failed")
+            
+            time.sleep(10)
+        
+        raise Exception("Generation timeout")
+
+# Usage
+try:
+    client = KlingAPI("YOUR_API_KEY")
+    
+    # Generate video
+    result = client.generate(
+        prompt="A beautiful sunset over the ocean",
+        version="2.5",
+        duration="5",
+        aspect_ratio="16:9"
+    )
+    
+    print(f"Generation started: {result['generation_id']}")
+    print(f"Price: {result['price']} credits")
+    
+    # Wait for completion
+    video_url = client.wait_for_completion(result['generation_id'])
+    print(f"Video ready: {video_url}")
+    
+except Exception as e:
+    print(f"Error: {str(e)}")
+```
+
+## JavaScript / Node.js
+
+### Basic Client
+```javascript
+const fetch = require('node-fetch');
+
+class KlingAPI {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseUrl = 'https://platform.runblob.io/v1/kling';
+  }
+
+  async generate(params) {
+    const response = await fetch(`${this.baseUrl}/generate`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        version: '2.5',
+        duration: '5',
+        ...params
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async getStatus(generationId) {
+    const response = await fetch(
+      `${this.baseUrl}/generations/${generationId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async waitForCompletion(generationId, pollInterval = 10000) {
+    while (true) {
+      const result = await this.getStatus(generationId);
+      
+      if (result.status === 'completed') {
+        return result.video_url;
+      } else if (result.status === 'failed') {
+        throw new Error('Generation failed');
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+  }
+}
+
+// Usage
+const client = new KlingAPI('YOUR_API_KEY');
+
+client.generate({
+  prompt: 'A beautiful sunset over the ocean'
+})
+  .then(result => {
+    console.log('Generation ID:', result.generation_id);
+    return client.waitForCompletion(result.generation_id);
+  })
+  .then(videoUrl => {
+    console.log('Video ready:', videoUrl);
+  })
+  .catch(error => {
+    console.error('Error:', error.message);
+  });
+```
+
+### Image-to-Video with URL
+```javascript
+const response = await fetch('https://platform.runblob.io/v1/kling/generate', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    prompt: 'Make this image come alive with motion',
+    image_url: 'https://example.com/my-image.jpg',
+    version: '2.1-master',
+    mode: 'pro',
+    duration: '10'
+  })
+});
+
+const data = await response.json();
+console.log('Generation ID:', data.generation_id);
+```
+

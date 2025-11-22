@@ -7,11 +7,11 @@
     "light": "/logo/light.svg"
   },
   "favicon": "/favicon.png",
-  "colors": {
-    "primary": "#18E299",
-    "light": "#4ADE80",
-    "dark": "#15803D"
-  },
+ "colors": {
+  "primary": "#5929DE",
+  "light": "#7B5BFF",
+  "dark": "#3C1E99"
+},
   "theme": "mint",
   "navbar": {
     "links": [
@@ -51,6 +51,17 @@
               "api-reference/veo3/webhooks",
               "api-reference/veo3/errors",
               "api-reference/veo3/examples"
+            ]
+          },
+          {
+            "group": "Kling AI Videos",
+            "icon": "film",
+            "pages": [
+              "api-reference/kling/generate",
+              "api-reference/kling/status",
+              "api-reference/kling/webhooks",
+              "api-reference/kling/errors",
+              "api-reference/kling/examples"
             ]
           }
         ]
