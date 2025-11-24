@@ -63,6 +63,17 @@
               "api-reference/kling/errors",
               "api-reference/kling/examples"
             ]
+          },
+          {
+            "group": "Sora 2 Videos",
+            "icon": "wand-magic-sparkles",
+            "pages": [
+              "api-reference/sora/generate",
+              "api-reference/sora/status",
+              "api-reference/sora/webhooks",
+              "api-reference/sora/errors",
+              "api-reference/sora/examples"
+            ]
           }
         ]
       }

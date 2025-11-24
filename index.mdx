@@ -1,11 +1,11 @@
 ---
 title: "RunBlob API"
-description: "Transform text into professional videos with AI. Powered by Google Veo3 and Kling AI."
+description: "Transform text into professional videos with AI. Powered by Google Veo3, Kling AI, and Sora 2."
 ---
 
 ## Transform Ideas into Videos
 
-RunBlob makes video creation effortless. Simply describe what you want, and our AI generates professional-quality videos in minutes using cutting-edge models.
+RunBlob makes video creation effortless. Simply describe what you want, and our AI generates professional-quality videos in minutes using multiple cutting-edge models.
 
 <CardGroup cols={3}>
   <Card title="Quick Start" icon="rocket" href="/quickstart">
@@ -42,6 +42,15 @@ Choose the best model for your use case:
     - Creative control with CFG Scale
     - 2-5 minute generation time
   </Card>
+  <Card title="Sora 2" icon="wand-magic-sparkles" href="/api-reference/sora/generate">
+    **OpenAI's Sora Generation**
+    
+    - Advanced text-to-video
+    - Image-to-video animation
+    - Portrait & landscape modes (9:16, 16:9)
+    - 10 or 15 second videos
+    - 5-15 minute generation time
+  </Card>
 </CardGroup>
 
 ## How It Works
@@ -62,35 +71,38 @@ Choose the best model for your use case:
 
 <AccordionGroup>
   <Accordion icon="video" title="Multiple AI Models">
-    Choose between Google Veo3 for quality or Kling AI for speed and creativity
+    Choose between Google Veo3, Kling AI, or Sora 2 based on your needs
   </Accordion>
   <Accordion icon="clock" title="Fast Generation">
-    Videos ready in 2-10 minutes depending on model selection
+    Videos ready in 2-15 minutes depending on model and settings
   </Accordion>
   <Accordion icon="webhook" title="Real-time Notifications">
     Get instant updates via webhooks when videos are ready
   </Accordion>
   <Accordion icon="shield" title="Enterprise Ready">
-    Reliable API with comprehensive error handling and authentication
+    Reliable API with comprehensive error handling and JWT authentication
   </Accordion>
   <Accordion icon="sliders" title="Advanced Control">
-    Fine-tune results with negative prompts, CFG scale, seeds, and aspect ratios
+    Fine-tune results with negative prompts, CFG scale, seeds, orientations, and aspect ratios
   </Accordion>
 </AccordionGroup>
 
 ## Model Comparison
 
-| Feature | Google Veo3 | Kling AI |
-|---------|-------------|----------|
-| Text-to-Video | Yes | Yes (most versions) |
-| Image-to-Video | Yes | Yes |
-| Frame-to-Frame | Yes | No |
-| Reference Images | Yes | No |
-| Negative Prompts | No | Yes (1.6, 2.1) |
-| CFG Scale | No | Yes (1.6 only) |
-| Generation Time | 1-10 min | 2-5 min |
-| Best For | High quality, complex scenes | Speed, creative control |
+| Feature | Google Veo3 | Kling AI | Sora 2 |
+|---------|-------------|----------|--------|
+| Text-to-Video | Yes | Yes (most versions) | Yes |
+| Image-to-Video | Yes | Yes | Yes |
+| Frame-to-Frame | Yes | No | No |
+| Reference Images | Yes | No | No |
+| Negative Prompts | No | Yes (1.6, 2.1) | No |
+| CFG Scale | No | Yes (1.6 only) | No |
+| Orientation Control | Limited | Limited | 9:16, 16:9 |
+| Duration Options | 5s, 10s | 5s, 10s | 10s, 15s |
+| Generation Time | 1-10 min | 2-5 min | 5-15 min |
+| Authentication | Bearer Token | Bearer Token | Bearer Token |
+| Best For | High quality, complex scenes | Speed, creative control | Portrait/landscape, OpenAI quality |
 
 <Note>
-  **Ready to start?** Generate your first video with our [quickstart guide](/quickstart) or explore the API documentation for [Veo3](/api-reference/veo3/generate) or [Kling AI](/api-reference/kling/generate).
+  **Ready to start?** Generate your first video with our [quickstart guide](/quickstart) or explore the API documentation for [Veo3](/api-reference/veo3/generate), [Kling AI](/api-reference/kling/generate), or [Sora 2](/api-reference/sora/generate).
 </Note>

@@ -1,0 +1,273 @@
+---
+title: "Check Status"
+description: "Monitor video generation progress"
+---
+
+## GET /v1/sora/generations/{generation_id}/
+
+Check the current status and progress of your video generation task.
+
+<ParamField path="generation_id" type="string" required>
+  Generation UUID returned from the generate endpoint
+</ParamField>
+
+<Accordion title="Status Values">
+  <ResponseField name="pending" type="string">
+    Task is in queue waiting to be processed
+  </ResponseField>
+  <ResponseField name="processing" type="string">
+    Video is currently being generated
+  </ResponseField>
+  <ResponseField name="completed" type="string">
+    Video generation completed successfully
+  </ResponseField>
+  <ResponseField name="failed" type="string">
+    Video generation failed with error
+  </ResponseField>
+</Accordion>
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://platform.runblob.io/v1/sora/generations/550e8400-e29b-41d4/ \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://platform.runblob.io/v1/sora/generations/550e8400-e29b-41d4/",
+    headers={"Authorization": "Bearer YOUR_TOKEN"}
+)
+```
+
+```python Python with Polling
+import requests
+import time
+
+generation_id = "550e8400-e29b-41d4-a716-446655440000"
+
+while True:
+    response = requests.get(
+        f"https://platform.runblob.io/v1/sora/generations/{generation_id}/",
+        headers={"Authorization": "Bearer YOUR_TOKEN"}
+    )
+    result = response.json()
+    
+    if result["status"] == "completed":
+        print(f"Video ready: {result['video_url']}")
+        break
+    elif result["status"] == "failed":
+        print(f"Generation failed: {result['error_message']}")
+        break
+    elif result["status"] == "processing":
+        print(f"Progress: {result['progress_pct']}%")
+    elif result["status"] == "pending":
+        print(f"Position in queue: {result['progress_pos_in_queue']}")
+    
+    time.sleep(5)
+```
+
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Pending">
+    Task is waiting in queue.
+    
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "pending",
+      "prompt": "A beautiful sunset over the ocean",
+      "video_url": null,
+      "created_at": "2025-11-24T10:00:00.000000",
+      "completed_at": null,
+      "progress_pct": null,
+      "progress_pos_in_queue": 3,
+      "error_message": null
+    }
+    ```
+    
+    <ResponseField name="progress_pos_in_queue" type="integer">
+      Position in the generation queue
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Processing">
+    Video is being generated.
+    
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "processing",
+      "prompt": "A beautiful sunset over the ocean",
+      "video_url": null,
+      "created_at": "2025-11-24T10:00:00.000000",
+      "completed_at": null,
+      "progress_pct": 45,
+      "progress_pos_in_queue": null,
+      "error_message": null
+    }
+    ```
+    
+    <ResponseField name="progress_pct" type="integer">
+      Generation progress from 0 to 100
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Completed">
+    Video generation completed successfully.
+    
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "completed",
+      "prompt": "A beautiful sunset over the ocean",
+      "video_url": "https://cdn.runblob.io/videos/2025/11/550e8400.mp4",
+      "created_at": "2025-11-24T10:00:00.000000",
+      "completed_at": "2025-11-24T10:05:30.000000",
+      "progress_pct": 100,
+      "progress_pos_in_queue": null,
+      "error_message": null
+    }
+    ```
+    
+    <ResponseField name="video_url" type="string">
+      Direct download URL for the generated video (MP4, H.264)
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Failed">
+    Generation failed with error.
+    
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "prompt": "A beautiful sunset over the ocean",
+      "video_url": null,
+      "created_at": "2025-11-24T10:00:00.000000",
+      "completed_at": "2025-11-24T10:02:00.000000",
+      "progress_pct": null,
+      "progress_pos_in_queue": null,
+      "error_message": "Image contains photorealistic people. Please try with a different image."
+    }
+    ```
+    
+    <ResponseField name="error_message" type="string">
+      Detailed error message explaining why generation failed
+    </ResponseField>
+  </Tab>
+</Tabs>
+
+## Response Fields
+
+<ResponseField name="generation_id" type="string">
+  UUID of the generation task
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current status: `pending`, `processing`, `completed`, or `failed`
+</ResponseField>
+
+<ResponseField name="prompt" type="string">
+  Original text prompt used for generation
+</ResponseField>
+
+<ResponseField name="video_url" type="string | null">
+  URL of the generated video (available only when `status === "completed"`)
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp of task creation
+</ResponseField>
+
+<ResponseField name="completed_at" type="string | null">
+  ISO 8601 timestamp of completion (or failure)
+</ResponseField>
+
+<ResponseField name="progress_pct" type="integer | null">
+  Generation progress percentage (0-100, only during `processing`)
+</ResponseField>
+
+<ResponseField name="progress_pos_in_queue" type="integer | null">
+  Position in queue (only during `pending`)
+</ResponseField>
+
+<ResponseField name="error_message" type="string | null">
+  Error description (only when `status === "failed"`)
+</ResponseField>
+
+## Polling Best Practices
+
+<AccordionGroup>
+  <Accordion icon="clock" title="Recommended Interval">
+    **5 seconds** - Optimal balance between server load and user experience
+    
+    - Provides real-time progress updates
+    - Doesn't overwhelm the server
+    - Good UX for users watching progress
+  </Accordion>
+  
+  <Accordion icon="hourglass" title="Maximum Wait Time">
+    **15 minutes** - Maximum expected generation time
+    
+    Set a timeout after 180 polling attempts (15 min × 60 sec / 5 sec interval)
+  </Accordion>
+  
+  <Accordion icon="chart-line" title="Show Progress">
+    Display `progress_pct` in a progress bar during `processing` status
+    
+    Show `progress_pos_in_queue` when status is `pending`
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Video generation can take 5-15 minutes. Always implement timeout handling and show progress indicators to users.
+</Warning>
+
+## GET /v1/sora/generations
+
+Get list of all generations for the authenticated user.
+
+### Query Parameters
+
+<ParamField query="limit" type="integer" default="50">
+  Number of records to return (max 100)
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Offset for pagination
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X GET "https://platform.runblob.io/v1/sora/generations?limit=20&offset=0" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Response
+
+```json
+[
+  {
+    "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "completed",
+    "prompt": "A beautiful sunset over the ocean",
+    "video_url": "https://cdn.runblob.io/videos/2025/11/550e8400.mp4",
+    "created_at": "2025-11-24T10:00:00.000000",
+    "completed_at": "2025-11-24T10:05:30.000000"
+  },
+  {
+    "generation_id": "650e8400-e29b-41d4-a716-446655440001",
+    "status": "processing",
+    "prompt": "City streets at night",
+    "video_url": null,
+    "created_at": "2025-11-24T09:50:00.000000",
+    "completed_at": null
+  }
+]
+```
+
