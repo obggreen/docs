@@ -84,6 +84,11 @@
           "anchor": "Contact Support",
           "href": "https://t.me/runblobsupport",
           "icon": "telegram"
+        },
+        {
+          "anchor": "News & Updates",
+          "href": "https://t.me/runblob",
+          "icon": "paper-plane"
         }
       ]
     }
@@ -100,6 +105,10 @@
           {
             "label": "Support",
             "href": "https://t.me/runblobsupport"
+          },
+          {
+            "label": "News & Updates",
+            "href": "https://t.me/runblob"
           }
         ]
       }
