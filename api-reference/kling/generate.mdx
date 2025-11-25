@@ -19,12 +19,17 @@ Creates a video generation task from text description using Kling AI models.
   What should NOT be in the video (max 2500 characters)
 </ParamField>
 
-<ParamField path="version" type="string" default="2.5">
-  Model version: `"1.6"`, `"2.1"`, `"2.1-master"`, `"2.5"`
-</ParamField>
-
-<ParamField path="mode" type="string" default="std">
-  Mode: `"std"` (Standard) or `"pro"` (Professional)
+<ParamField path="model" type="string" default="kling_2.5_turbo">
+  Model to use.
+  
+  **Available models:**
+  - `kling_2.5_turbo` (Standard/Turbo)
+  - `kling_2.5_turbo_pro` (Professional/Turbo Pro)
+  - `kling_2.1` (Standard)
+  - `kling_2.1_pro` (Professional)
+  - `kling_2.1_master` (Master, no pro mode)
+  - `kling_1.6` (Standard)
+  - `kling_1.6_pro` (Professional)
 </ParamField>
 
 <ParamField path="duration" type="string" default="5">
@@ -62,7 +67,8 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "prompt": "A golden retriever running through a sunflower field at sunset"
+    "prompt": "A golden retriever running through a sunflower field at sunset",
+    "model": "kling_2.5_turbo"
   }'
 ```
 
@@ -73,8 +79,7 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
   -d '{
     "prompt": "A futuristic cyberpunk city with neon lights and flying cars",
     "negative_prompt": "blurry, low quality, distorted",
-    "version": "1.6",
-    "mode": "pro",
+    "model": "kling_1.6_pro",
     "duration": "10",
     "aspect_ratio": "16:9",
     "cfg_scale": 0.7,
@@ -89,7 +94,7 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
   -d '{
     "prompt": "Animate this portrait with subtle movements and blinking",
     "image_base64": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
-    "version": "2.5",
+    "model": "kling_2.5_turbo",
     "duration": "5",
     "aspect_ratio": "9:16"
   }'
@@ -102,8 +107,7 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
   -d '{
     "prompt": "Make this image come alive with motion",
     "image_url": "https://example.com/my-image.jpg",
-    "version": "2.1-master",
-    "mode": "pro",
+    "model": "kling_2.1_master",
     "duration": "10"
   }'
 ```
@@ -120,7 +124,7 @@ response = requests.post(
     },
     json={
         "prompt": "A golden retriever running through a sunflower field",
-        "version": "2.5"
+        "model": "kling_2.5_turbo"
     }
 )
 
@@ -134,7 +138,7 @@ response = requests.post(
     json={
         "prompt": "Animate this image",
         "image_url": "https://example.com/image.jpg",
-        "version": "2.1-master",
+        "model": "kling_2.1_master",
         "duration": "10"
     }
 )
@@ -156,6 +160,18 @@ response = requests.post(
   Video generation typically takes 2-5 minutes. Use the `generation_id` to check status or set up webhooks for notifications.
 </Note>
 
+### Get Generation Status Response
+
+```json
+{
+    "generation_id": "5b92cd9c-2ddf-45a4-9bd1-7b13afaf1186",
+    "status": "completed",
+    "prompt": "cat and dog play together",
+    "video_url": "https://storage.runblob.io/...",
+    "model": "kling_2.5_turbo"
+}
+```
+
 ## Generation Modes
 
 The API supports **2 generation modes**:
@@ -163,10 +179,10 @@ The API supports **2 generation modes**:
 ### 1. Text-to-Video
 Generate video from text prompt only (no images).
 
-**Models:** `1.6`, `2.1-master`, `2.5`
+**Models:** `kling_1.6`, `kling_2.1_master`, `kling_2.5_turbo`
 
 <Warning>
-  Version `2.1` (Pro) does NOT support text-to-video. It requires an input image.
+  `kling_2.1` and `kling_2.1_pro` do NOT support text-to-video. They require an input image.
 </Warning>
 
 ### 2. Image-to-Video
@@ -174,18 +190,16 @@ Animate a single image with text prompt using `image_base64` or `image_url` para
 
 - Formats: JPEG, PNG, WEBP
 - Max size: ~10 MB
-- Models: `1.6`, `2.1`, `2.1-master`, `2.5`
+- Models: `kling_1.6`, `kling_2.1`, `kling_2.1_master`, `kling_2.5_turbo` (and their `_pro` variants)
 
 <Info>
   **Important:** You cannot use both `image_base64` and `image_url` in the same request.
 </Info>
 
-## Model Versions
+## Models Guide
 
 ### Kling 2.5 Turbo (Default)
-- **Version:** `"2.5"`
-- **Modes:** `std`, `pro`
-- **Duration:** `5s`, `10s`
+- **Codes:** `kling_2.5_turbo`, `kling_2.5_turbo_pro`
 - **Features:**
   - Text-to-video: Yes
   - Image-to-video: Yes
@@ -194,9 +208,7 @@ Animate a single image with text prompt using `image_base64` or `image_url` para
 - **Best for:** Fastest generation speed
 
 ### Kling 2.1 Master
-- **Version:** `"2.1-master"`
-- **Modes:** `std`, `pro`
-- **Duration:** `5s`, `10s`
+- **Code:** `kling_2.1_master`
 - **Features:**
   - Text-to-video: Yes
   - Image-to-video: Yes
@@ -205,9 +217,7 @@ Animate a single image with text prompt using `image_base64` or `image_url` para
 - **Best for:** High-quality text-to-video
 
 ### Kling 2.1 Pro
-- **Version:** `"2.1"`
-- **Modes:** `pro`
-- **Duration:** `5s`, `10s`
+- **Codes:** `kling_2.1`, `kling_2.1_pro`
 - **Features:**
   - Text-to-video: No (image required)
   - Image-to-video: Yes
@@ -216,9 +226,7 @@ Animate a single image with text prompt using `image_base64` or `image_url` para
 - **Best for:** Professional image animation
 
 ### Kling 1.6
-- **Version:** `"1.6"`
-- **Modes:** `std`, `pro`
-- **Duration:** `5s`, `10s`
+- **Codes:** `kling_1.6`, `kling_1.6_pro`
 - **Features:**
   - Text-to-video: Yes
   - Image-to-video: Yes
@@ -233,4 +241,3 @@ Animate a single image with text prompt using `image_base64` or `image_url` para
   - **0.4-0.6:** Balanced mode (recommended)
   - **0.7-1.0:** Strict prompt following, minimal deviations
 </Accordion>
-
