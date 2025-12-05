@@ -36,11 +36,20 @@ Choose the best model for your use case:
   <Card title="Kling AI" icon="film" href="/api-reference/kling/generate">
     **Fast & Creative Generation**
     
-    - Multiple model versions (1.6, 2.1, 2.5 Turbo)
+    - Multiple model versions (1.6, 2.1, 2.5 Turbo, 2.6 NEW)
+    - Kling 2.6: Audio-enabled Pro quality
     - Text-to-video & image-to-video
     - Negative prompts support
-    - Creative control with CFG Scale
     - 2-5 minute generation time
+  </Card>
+  <Card title="Kling O1 Photo" icon="image" href="/api-reference/kling/photo-generate">
+    **AI Image Generation**
+    
+    - High-quality image generation (1K/2K)
+    - Reference-based with up to 5 input images
+    - 8 aspect ratio options
+    - Fast generation (1-2 minutes)
+    - $0.029 per image
   </Card>
   <Card title="Sora 2" icon="wand-magic-sparkles" href="/api-reference/sora/generate">
     **OpenAI's Sora Generation**
@@ -89,20 +98,23 @@ Choose the best model for your use case:
 
 ## Model Comparison
 
-| Feature | Google Veo3 | Kling AI | Sora 2 |
-|---------|-------------|----------|--------|
-| Text-to-Video | Yes | Yes (most versions) | Yes |
-| Image-to-Video | Yes | Yes | Yes |
-| Frame-to-Frame | Yes | No | No |
-| Reference Images | Yes | No | No |
-| Negative Prompts | No | Yes (1.6, 2.1) | No |
-| CFG Scale | No | Yes (1.6 only) | No |
-| Orientation Control | Limited | Limited | 9:16, 16:9 |
-| Duration Options | 5s, 10s | 5s, 10s | 10s, 15s |
-| Generation Time | 1-10 min | 2-5 min | 5-15 min |
-| Authentication | Bearer Token | Bearer Token | Bearer Token |
-| Best For | High quality, complex scenes | Speed, creative control | Portrait/landscape, OpenAI quality |
+| Feature | Google Veo3 | Kling AI Videos | Kling O1 Photo | Sora 2 |
+|---------|-------------|-----------------|----------------|--------|
+| Type | Video | Video | Image | Video |
+| Text-to-Video | Yes | Yes (most versions) | - | Yes |
+| Text-to-Image | - | - | Yes | - |
+| Image-to-Video | Yes | Yes | - | Yes |
+| Frame-to-Frame | Yes | No | - | No |
+| Reference Images | Yes | No | Up to 5 | No |
+| Audio Support | No | Yes (2.6 only) | - | No |
+| Negative Prompts | No | Yes (1.6, 2.1) | - | No |
+| CFG Scale | No | Yes (1.6 only) | - | No |
+| Aspect Ratios | 9:16, 16:9 | 9:16, 16:9, 1:1 | 8 options | 9:16, 16:9 |
+| Duration Options | 5s, 10s | 5s, 10s | - | 10s, 15s |
+| Generation Time | 1-10 min | 2-5 min | 1-2 min | 5-15 min |
+| Authentication | Bearer Token | Bearer Token | Bearer Token | Bearer Token |
+| Best For | High quality, complex scenes | Speed, creative control | Fast image generation | Portrait/landscape videos |
 
 <Note>
-  **Ready to start?** Generate your first video with our [quickstart guide](/quickstart) or explore the API documentation for [Veo3](/api-reference/veo3/generate), [Kling AI](/api-reference/kling/generate), or [Sora 2](/api-reference/sora/generate).
+  **Ready to start?** Generate your first video with our [quickstart guide](/quickstart) or explore the API documentation for [Veo3](/api-reference/veo3/generate), [Kling AI Videos](/api-reference/kling/generate), [Kling O1 Photos](/api-reference/kling/photo-generate), or [Sora 2](/api-reference/sora/generate).
 </Note>

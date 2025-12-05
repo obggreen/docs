@@ -1,0 +1,160 @@
+---
+title: "Generate Image"
+description: "Create images from text prompts using Kling O1 Photo"
+---
+
+<Info>
+  **Base URL:** `https://platform.runblob.io`
+</Info>
+
+## POST /v1/o1-photo/generate
+
+Creates an image generation task from text description using Kling O1 Photo model.
+
+<ParamField path="prompt" type="string" required>
+  Text description of the image (1-2500 characters)
+</ParamField>
+
+<ParamField path="input_images" type="array">
+  Array of up to 5 image URLs for reference-based generation
+</ParamField>
+
+<ParamField path="img_resolution" type="string" default="2k">
+  Image resolution: `"1k"` or `"2k"`
+</ParamField>
+
+<ParamField path="aspect_ratio" type="string" default="1:1">
+  Image aspect ratio. Available options:
+  - `"9:16"` - Vertical portrait
+  - `"2:3"` - Vertical
+  - `"3:4"` - Vertical
+  - `"1:1"` - Square (default)
+  - `"4:3"` - Horizontal
+  - `"3:2"` - Horizontal
+  - `"16:9"` - Widescreen
+  - `"21:9"` - Ultra-wide
+</ParamField>
+
+<ParamField path="callback_url" type="string">
+  Webhook URL for completion notifications
+</ParamField>
+
+<CodeGroup>
+
+```bash Simple Generation
+curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A futuristic city with flying cars, neon lights, cyberpunk style",
+    "img_resolution": "2k",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+```bash With Reference Images
+curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Combine these images into a beautiful collage with a sunset theme",
+    "input_images": [
+      "https://your-storage.com/image1.jpg",
+      "https://your-storage.com/image2.jpg",
+      "https://your-storage.com/image3.jpg"
+    ],
+    "img_resolution": "2k",
+    "aspect_ratio": "1:1",
+    "callback_url": "https://your-app.com/webhooks/kling-photo"
+  }'
+```
+
+```python Python
+import requests
+
+# Simple generation
+response = requests.post(
+    "https://platform.runblob.io/v1/o1-photo/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "A futuristic city with flying cars, neon lights",
+        "img_resolution": "2k",
+        "aspect_ratio": "16:9"
+    }
+)
+
+# With reference images
+response = requests.post(
+    "https://platform.runblob.io/v1/o1-photo/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Combine these images into a beautiful collage",
+        "input_images": [
+            "https://your-storage.com/image1.jpg",
+            "https://your-storage.com/image2.jpg"
+        ],
+        "img_resolution": "2k",
+        "aspect_ratio": "1:1"
+    }
+)
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "generation_id": "photo-550e8400-e29b-41d4-a716",
+  "status": "pending",
+  "price": "0.0290"
+}
+```
+
+<ResponseField name="generation_id" type="string">
+  UUID of the generation task for status checking
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Initial status, always `"pending"`
+</ResponseField>
+
+<ResponseField name="price" type="string">
+  Amount charged in USD ($0.029 per image)
+</ResponseField>
+
+<Note>
+  Image generation typically takes 1-2 minutes. Use the `generation_id` to [check status](/api-reference/kling/photo-status) or set up [webhooks](/api-reference/kling/photo-webhooks) for notifications.
+</Note>
+
+## Generation Features
+
+<AccordionGroup>
+  <Accordion icon="images" title="Reference Images">
+    **Use up to 5 input images:**
+    - Provide URLs of reference images
+    - Images should be accessible via HTTPS
+    - Supports JPEG, PNG, WEBP formats
+    - AI will use them as visual reference for generation
+  </Accordion>
+  
+  <Accordion icon="expand" title="Resolution Options">
+    **Choose image quality:**
+    - **1K:** Faster generation, standard quality
+    - **2K:** Higher detail, recommended for most use cases
+  </Accordion>
+  
+  <Accordion icon="crop" title="Aspect Ratios">
+    **8 aspect ratio options:**
+    - Portrait formats: 9:16, 2:3, 3:4
+    - Square: 1:1
+    - Landscape formats: 4:3, 3:2, 16:9, 21:9
+  </Accordion>
+</AccordionGroup>
+

@@ -118,6 +118,77 @@ description: "Comprehensive error handling guide"
     </AccordionGroup>
   </Tab>
   
+  <Tab title="Generation Errors">
+    Errors that occur during generation process.
+    
+    <AccordionGroup>
+      <Accordion icon="clock" title="TIMEOUT">
+        **Description:** Generation exceeded maximum processing time (15 minutes)
+        
+        **Action:** Credits are automatically refunded
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "TIMEOUT"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="shield-exclamation" title="CONTENT_POLICY_VIOLATION">
+        **Description:** Content violates usage policies
+        
+        **Solution:** Modify your prompt to comply with content guidelines
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "CONTENT_POLICY_VIOLATION"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="ban" title="TASK_FAILED">
+        **Description:** Generation failed due to system error
+        
+        **Action:** Credits are automatically refunded, try again
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "TASK_FAILED"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="image" title="INVALID_IMAGE">
+        **Description:** Provided image is not valid or corrupted
+        
+        **Solution:** Ensure you're using valid JPEG, PNG, or WEBP format
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "INVALID_IMAGE"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="link-slash" title="IMAGE_INACCESSIBLE">
+        **Description:** Image URL is inaccessible or invalid
+        
+        **Solution:** Verify the image URL is accessible via HTTPS
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "IMAGE_INACCESSIBLE"
+        }
+        ```
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  
   <Tab title="System Errors">
     Technical issues on the server side.
     
@@ -191,14 +262,40 @@ description: "Comprehensive error handling guide"
   Use this matrix to understand which features are supported by each model version.
 </Info>
 
-| Feature | 1.6 | 2.1 Pro | 2.1 Master | 2.5 Turbo |
-|---------|-----|---------|------------|-----------|
-| Text-to-Video | Yes | No | Yes | Yes |
-| Image-to-Video | Yes | Yes | Yes | Yes |
-| Negative Prompt | Yes | Yes | Yes | No |
-| CFG Scale | Yes | No | No | No |
-| Standard Mode | Yes | No | Yes | Yes |
-| Professional Mode | Yes | Yes | Yes | Yes |
+| Feature | 1.6 | 2.1 Pro | 2.1 Master | 2.5 Turbo | 2.6 |
+|---------|-----|---------|------------|-----------|-----|
+| Text-to-Video | Yes | No | Yes | Yes | Yes |
+| Image-to-Video | Yes | Yes | Yes | Yes | Yes |
+| Audio Support | No | No | No | No | Yes |
+| Negative Prompt | Yes | Yes | Yes | No | No |
+| CFG Scale | Yes | No | No | No | No |
+| Standard Mode | Yes | No | Yes | Yes | No |
+| Professional Mode | Yes | Yes | Yes | Yes | Always |
+| Priority Processing | No | No | No | No | Yes |
+
+## Webhook Error Codes
+
+When using webhooks with Kling 2.6 or O1 Photo, you may receive these error codes in the `message` field:
+
+<ResponseField name="TIMEOUT" type="Generation Error">
+  Generation exceeded 15-minute timeout limit (automatic refund)
+</ResponseField>
+
+<ResponseField name="CONTENT_POLICY_VIOLATION" type="Content Error">
+  Content violates usage policies
+</ResponseField>
+
+<ResponseField name="TASK_FAILED" type="System Error">
+  Generation failed due to system error (automatic refund)
+</ResponseField>
+
+<ResponseField name="INVALID_IMAGE" type="User Error">
+  Provided image is not valid or corrupted
+</ResponseField>
+
+<ResponseField name="IMAGE_INACCESSIBLE" type="User Error">
+  Image URL is inaccessible or invalid
+</ResponseField>
 
 <Warning>
   Always check model compatibility before making requests to avoid validation errors.

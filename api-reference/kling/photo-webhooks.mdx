@@ -1,0 +1,241 @@
+---
+title: "Webhooks"
+description: "Real-time notifications for image generation events"
+---
+
+<Info>
+  Webhooks provide instant notifications when your image generation tasks complete, fail, or timeout. No more polling!
+</Info>
+
+## Setup Guide
+
+<Steps>
+  <Step title="Create Webhook Endpoint">
+    Set up an HTTPS endpoint that can receive POST requests.
+    
+    ```python
+    from flask import Flask, request, jsonify
+    
+    app = Flask(__name__)
+    
+    @app.route('/webhook/photo', methods=['POST'])
+    def handle_webhook():
+        data = request.json
+        
+        if data['status'] == 'completed':
+            print(f"Image ready: {data['image_url']}")
+        else:
+            print(f"Generation failed: {data['message']}")
+            
+        return jsonify({'status': 'received'}), 200
+    ```
+  </Step>
+  
+  <Step title="Add Webhook URL">
+    Include your webhook URL when creating a generation task.
+    
+    ```bash
+    curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "prompt": "A futuristic cyberpunk city",
+        "callback_url": "https://your-app.com/webhook/photo"
+      }'
+    ```
+  </Step>
+  
+  <Step title="Handle Notifications">
+    Your endpoint will receive instant notifications when tasks complete.
+  </Step>
+</Steps>
+
+## Payload Structure
+
+<Tabs>
+  <Tab title="Success">
+    Sent when image generation completes successfully.
+    
+    ```json
+    {
+      "generation_id": "photo-550e8400-e29b-41d4-a716",
+      "status": "completed",
+      "image_url": "https://cdn.example.com/photos/photo-550e8400.png",
+      "model": "kling-o1-photo",
+      "message": null
+    }
+    ```
+    
+    <ResponseField name="status" type="string">
+      Always `"completed"` for successful generations
+    </ResponseField>
+    <ResponseField name="generation_id" type="string">
+      UUID of the completed task
+    </ResponseField>
+    <ResponseField name="image_url" type="string">
+      Direct download URL for the generated image
+    </ResponseField>
+    <ResponseField name="message" type="null">
+      Always `null` for successful generations
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Failed">
+    Sent when image generation fails with specific error codes.
+    
+    ```json
+    {
+      "generation_id": "photo-550e8400-e29b-41d4-a716",
+      "status": "failed",
+      "image_url": null,
+      "model": "kling-o1-photo",
+      "message": "CONTENT_POLICY_VIOLATION"
+    }
+    ```
+    
+    <ResponseField name="status" type="string">
+      Always `"failed"` for failed generations
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Machine-readable error code (see [Error Codes](/api-reference/kling/photo-errors))
+    </ResponseField>
+    <ResponseField name="image_url" type="null">
+      Always `null` for failed tasks
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Timeout">
+    Sent when generation exceeds the 15-minute limit.
+    
+    ```json
+    {
+      "generation_id": "photo-550e8400-e29b-41d4-a716",
+      "status": "failed",
+      "image_url": null,
+      "model": "kling-o1-photo",
+      "message": "TIMEOUT"
+    }
+    ```
+    
+    <Note>
+      Credits are automatically refunded for timed-out tasks.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Reliability Features
+
+<AccordionGroup>
+  <Accordion icon="repeat" title="Automatic Retries">
+    **Retry Policy:** Up to 5 attempts with 30-second intervals
+    
+    **Backoff Strategy:** Linear backoff between retries
+    
+    **Failure Handling:** After 5 failed attempts, the webhook is marked as failed
+  </Accordion>
+  
+  <Accordion icon="clock" title="Timeout Handling">
+    **Request Timeout:** 30 seconds per webhook request
+    
+    **Connection Timeout:** 10 seconds to establish connection
+    
+    **Best Practice:** Respond quickly with a 200 status code
+  </Accordion>
+  
+  <Accordion icon="shield-check" title="Security">
+    **HTTPS Required:** All webhook URLs must use HTTPS
+    
+    **IP Allowlist:** Consider restricting access to RunBlob's IP ranges
+    
+    **Validation:** Always validate the generation_id in your webhook handler
+  </Accordion>
+</AccordionGroup>
+
+## Example Implementations
+
+<CodeGroup>
+
+```python Flask
+from flask import Flask, request, jsonify
+import logging
+
+app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+
+@app.route('/webhook/photo', methods=['POST'])
+def kling_photo_webhook():
+    try:
+        data = request.json
+        generation_id = data.get('generation_id')
+        
+        if data.get('status') == 'completed':
+            image_url = data.get('image_url')
+            logging.info(f"Image ready for {generation_id}: {image_url}")
+            # Process successful generation
+            process_image(generation_id, image_url)
+        else:
+            error_code = data.get('message')
+            logging.error(f"Generation failed for {generation_id}: {error_code}")
+            # Handle failure
+            handle_failure(generation_id, error_code)
+        
+        return jsonify({'status': 'received'}), 200
+    except Exception as e:
+        logging.error(f"Webhook error: {str(e)}")
+        return jsonify({'error': 'Internal error'}), 500
+
+def process_image(generation_id, image_url):
+    # Your image processing logic here
+    pass
+
+def handle_failure(generation_id, error_code):
+    # Your error handling logic here
+    pass
+```
+
+```javascript Express.js
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/webhook/photo', (req, res) => {
+  try {
+    const { status, generation_id, image_url, message } = req.body;
+    
+    if (status === 'completed') {
+      console.log(`Image ready for ${generation_id}: ${image_url}`);
+      // Process successful generation
+      processImage(generation_id, image_url);
+    } else {
+      console.error(`Generation failed for ${generation_id}: ${message}`);
+      // Handle failure
+      handleFailure(generation_id, message);
+    }
+    
+    res.status(200).json({ status: 'received' });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+function processImage(generationId, imageUrl) {
+  // Your image processing logic here
+}
+
+function handleFailure(generationId, errorCode) {
+  // Your error handling logic here
+}
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});
+```
+
+</CodeGroup>
+
+<Warning>
+  **Important:** Always return a 200 status code quickly to acknowledge receipt. Perform heavy processing asynchronously to avoid timeouts.
+</Warning>
+

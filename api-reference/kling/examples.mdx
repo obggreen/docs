@@ -15,6 +15,48 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
   }'
 ```
 
+### Kling 2.6 (NEW with Audio)
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A majestic lion walking through the African savanna at sunset, cinematic shot",
+    "model": "kling_2.6",
+    "duration": "10",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+### O1 Photo Generation
+```bash
+curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A futuristic city with flying cars, neon lights, cyberpunk style",
+    "img_resolution": "2k",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+### O1 Photo with Reference Images
+```bash
+curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Combine these images into a beautiful collage with a sunset theme",
+    "input_images": [
+      "https://your-storage.com/image1.jpg",
+      "https://your-storage.com/image2.jpg",
+      "https://your-storage.com/image3.jpg"
+    ],
+    "img_resolution": "2k",
+    "aspect_ratio": "1:1"
+  }'
+```
+
 ### Advanced Text-to-Video
 ```bash
 curl -X POST https://platform.runblob.io/v1/kling/generate \
@@ -47,9 +89,15 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
   }'
 ```
 
-### Check Status
+### Check Video Status
 ```bash
 curl -X GET https://platform.runblob.io/v1/kling/generations/GENERATION_ID \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Check Photo Status
+```bash
+curl -X GET https://platform.runblob.io/v1/o1-photo/status/GENERATION_ID \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -119,6 +167,62 @@ result = client.generate_from_image(
     duration="10"
 )
 video_url = client.wait_for_completion(result["generation_id"])
+
+# Kling 2.6 (NEW with Audio)
+result = client.generate(
+    "A majestic lion in the savanna",
+    model="kling_2.6",
+    duration="10"
+)
+video_url = client.wait_for_completion(result["generation_id"])
+```
+
+### O1 Photo Client
+```python
+import requests
+
+class KlingO1PhotoClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://platform.runblob.io"
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    
+    def generate(self, prompt, **kwargs):
+        response = requests.post(
+            f"{self.base_url}/v1/o1-photo/generate",
+            headers=self.headers,
+            json={"prompt": prompt, **kwargs}
+        )
+        return response.json()
+    
+    def status(self, generation_id):
+        response = requests.get(
+            f"{self.base_url}/v1/o1-photo/status/{generation_id}",
+            headers=self.headers
+        )
+        return response.json()
+
+# Generate image
+client = KlingO1PhotoClient("YOUR_API_KEY")
+result = client.generate(
+    "A futuristic cyberpunk city",
+    img_resolution="2k",
+    aspect_ratio="16:9"
+)
+print(f"Image generation started: {result['generation_id']}")
+
+# With reference images
+result = client.generate(
+    "Beautiful landscape with mountains",
+    input_images=[
+        "https://example.com/ref1.jpg",
+        "https://example.com/ref2.jpg"
+    ],
+    img_resolution="2k"
+)
 ```
 
 ### Image-to-Video with Base64
@@ -326,6 +430,53 @@ client.generate({
   .catch(error => {
     console.error('Error:', error.message);
   });
+
+// Kling 2.6 (NEW with Audio)
+client.generate({
+  prompt: 'Cinematic mountain landscape',
+  model: 'kling_2.6',
+  duration: '10'
+})
+  .then(result => client.waitForCompletion(result.generation_id))
+  .then(videoUrl => console.log('Video ready:', videoUrl));
+```
+
+### O1 Photo Generation
+```javascript
+// Simple photo generation
+const photoResponse = await fetch('https://platform.runblob.io/v1/o1-photo/generate', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    prompt: 'A futuristic cyberpunk city with neon lights',
+    img_resolution: '2k',
+    aspect_ratio: '16:9'
+  })
+});
+
+const photoData = await photoResponse.json();
+console.log('Photo generation ID:', photoData.generation_id);
+
+// With reference images
+const photoWithRefsResponse = await fetch('https://platform.runblob.io/v1/o1-photo/generate', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    prompt: 'Beautiful landscape combining these styles',
+    input_images: [
+      'https://example.com/ref1.jpg',
+      'https://example.com/ref2.jpg'
+    ],
+    img_resolution: '2k',
+    aspect_ratio: '1:1'
+  })
+});
 ```
 
 ### Image-to-Video with URL
