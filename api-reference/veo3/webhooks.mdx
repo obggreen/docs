@@ -22,7 +22,7 @@ description: "Real-time notifications for video generation events"
     def handle_webhook():
         data = request.json
         
-        if data['success']:
+        if data['status'] == 'completed':
             print(f"Video ready: {data['video_url']}")
         else:
             print(f"Generation failed: {data['message']}")
@@ -53,26 +53,26 @@ description: "Real-time notifications for video generation events"
 ## Payload Structure
 
 <Tabs>
-  <Tab title="Success">
+  <Tab title="Completed">
     Sent when video generation completes successfully.
     
     ```json
     {
-      "success": true,
-      "message": "Task completed successfully",
+      "status": "completed",
       "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "Task completed successfully",
       "video_url": "https://cdn.runblob.io/videos/your-video.mp4"
     }
     ```
     
-    <ResponseField name="success" type="boolean">
-      Always `true` for successful generations
-    </ResponseField>
-    <ResponseField name="message" type="string">
-      Human-readable success message
+    <ResponseField name="status" type="string">
+      Always `"completed"` for successful generations
     </ResponseField>
     <ResponseField name="generation_id" type="string">
       UUID of the completed task
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Human-readable success message
     </ResponseField>
     <ResponseField name="video_url" type="string">
       Direct download URL for the generated video
@@ -84,21 +84,21 @@ description: "Real-time notifications for video generation events"
     
     ```json
     {
-      "success": false,
-      "message": "UNSAFE_CONTENT",
+      "status": "failed",
       "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "UNSAFE_CONTENT",
       "video_url": null
     }
     ```
     
-    <ResponseField name="success" type="boolean">
-      Always `false` for failed generations
-    </ResponseField>
-    <ResponseField name="message" type="string">
-      Machine-readable error code (see [Error Codes](/api-reference/veo3/errors))
+    <ResponseField name="status" type="string">
+      Always `"failed"` for failed generations
     </ResponseField>
     <ResponseField name="generation_id" type="string">
       UUID of the failed task
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Machine-readable error code (see [Error Codes](/api-reference/veo3/errors))
     </ResponseField>
     <ResponseField name="video_url" type="null">
       Always `null` for failed tasks
@@ -110,9 +110,9 @@ description: "Real-time notifications for video generation events"
     
     ```json
     {
-      "success": false,
-      "message": "TIMEOUT",
+      "status": "failed",
       "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "message": "TIMEOUT",
       "video_url": null
     }
     ```
@@ -167,8 +167,9 @@ def runblob_webhook():
     try:
         data = request.json
         generation_id = data.get('generation_id')
+        status = data.get('status')
         
-        if data.get('success'):
+        if status == 'completed':
             video_url = data.get('video_url')
             logging.info(f"Video ready for {generation_id}: {video_url}")
             # Process successful generation
@@ -201,9 +202,9 @@ app.use(express.json());
 
 app.post('/webhook', (req, res) => {
   try {
-    const { success, generation_id, video_url, message } = req.body;
+    const { status, generation_id, video_url, message } = req.body;
     
-    if (success) {
+    if (status === 'completed') {
       console.log(`Video ready for ${generation_id}: ${video_url}`);
       // Process successful generation
       processVideo(generation_id, video_url);
