@@ -46,7 +46,7 @@ curl -X POST https://platform.runblob.io/v1/veo/generate \
 
 ### Check Status
 ```bash
-curl -X GET https://platform.runblob.io/v1/veo/status/TASK_ID \
+curl -X GET https://platform.runblob.io/v1/veo/status/GENERATION_ID \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -101,16 +101,16 @@ class VeoClient:
         )
         return response.json()
     
-    def status(self, task_id):
+    def status(self, generation_id):
         response = requests.get(
-            f"{self.base_url}/v1/veo/status/{task_id}",
+            f"{self.base_url}/v1/veo/status/{generation_id}",
             headers=self.headers
         )
         return response.json()
     
-    def wait_for_completion(self, task_id):
+    def wait_for_completion(self, generation_id):
         while True:
-            result = self.status(task_id)
+            result = self.status(generation_id)
             if result["status"] == "completed":
                 return result["video_url"]
             elif result["status"] == "failed":
@@ -120,7 +120,7 @@ class VeoClient:
 # Text-to-Video
 client = VeoClient("YOUR_API_KEY")
 result = client.generate("A sunset over mountains")
-video_url = client.wait_for_completion(result["task_id"])
+video_url = client.wait_for_completion(result["generation_id"])
 print(f"Video ready: {video_url}")
 
 # Frame-to-Frame
@@ -130,7 +130,7 @@ result = client.generate_frame_to_frame(
     end_frame="data:image/jpeg;base64,...",
     aspect_ratio="16:9"
 )
-video_url = client.wait_for_completion(result["task_id"])
+video_url = client.wait_for_completion(result["generation_id"])
 
 # Reference Images
 result = client.generate_with_references(
@@ -141,7 +141,7 @@ result = client.generate_with_references(
     ],
     aspect_ratio="16:9"
 )
-video_url = client.wait_for_completion(result["task_id"])
+video_url = client.wait_for_completion(result["generation_id"])
 ```
 
 

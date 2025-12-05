@@ -37,7 +37,7 @@ description: "Generate your first video in 3 simple steps"
         json={"prompt": "A cat playing with a ball in a sunny room"}
     )
     result = response.json()
-    print(f"Task ID: {result['task_id']}")
+    print(f"Generation ID: {result['generation_id']}")
     ```
     </CodeGroup>
 
@@ -46,13 +46,13 @@ description: "Generate your first video in 3 simple steps"
     {
       "success": true,
       "message": "Task created successfully",
-      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     }
     ```
   </Step>
 
   <Step title="Check Status">
-    Monitor your video generation progress using the task ID.
+    Monitor your video generation progress using the generation ID.
 
     <CodeGroup>
     ```bash cURL
@@ -64,11 +64,11 @@ description: "Generate your first video in 3 simple steps"
     import requests
     import time
 
-    task_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    generation_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     
     while True:
         response = requests.get(
-            f"https://platform.runblob.io/v1/veo/status/{task_id}",
+            f"https://platform.runblob.io/v1/veo/status/{generation_id}",
             headers={"Authorization": "Bearer YOUR_API_KEY"}
         )
         result = response.json()
@@ -89,7 +89,7 @@ description: "Generate your first video in 3 simple steps"
     ```json
     {
       "status": "completed",
-      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "message": "Task completed successfully",
       "video_url": "https://your-video.mp4"
     }

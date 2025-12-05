@@ -7,7 +7,7 @@ description: "Ready-to-use code snippets for Kling O1 Photo integration"
 
 ### Simple Generation
 ```bash
-curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
+curl -X POST https://platform.runblob.io/v1/kling/o1-photo/generate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -19,7 +19,7 @@ curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
 
 ### With Reference Images
 ```bash
-curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
+curl -X POST https://platform.runblob.io/v1/kling/o1-photo/generate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -36,7 +36,7 @@ curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
 
 ### With Webhook
 ```bash
-curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
+curl -X POST https://platform.runblob.io/v1/kling/o1-photo/generate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -49,7 +49,7 @@ curl -X POST https://platform.runblob.io/v1/o1-photo/generate \
 
 ### Check Status
 ```bash
-curl -X GET https://platform.runblob.io/v1/o1-photo/status/photo-550e8400 \
+curl -X GET https://platform.runblob.io/v1/kling/o1-photo/status/photo-550e8400 \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -71,7 +71,7 @@ class KlingO1PhotoClient:
     
     def generate(self, prompt, **kwargs):
         response = requests.post(
-            f"{self.base_url}/v1/o1-photo/generate",
+            f"{self.base_url}/v1/kling/o1-photo/generate",
             headers=self.headers,
             json={"prompt": prompt, **kwargs}
         )
@@ -79,7 +79,7 @@ class KlingO1PhotoClient:
     
     def generate_with_references(self, prompt, input_images, **kwargs):
         response = requests.post(
-            f"{self.base_url}/v1/o1-photo/generate",
+            f"{self.base_url}/v1/kling/o1-photo/generate",
             headers=self.headers,
             json={
                 "prompt": prompt,
@@ -91,7 +91,7 @@ class KlingO1PhotoClient:
     
     def status(self, generation_id):
         response = requests.get(
-            f"{self.base_url}/v1/o1-photo/status/{generation_id}",
+            f"{self.base_url}/v1/kling/o1-photo/status/{generation_id}",
             headers=self.headers
         )
         return response.json()
@@ -137,7 +137,7 @@ from typing import Optional, List
 class KlingO1PhotoAPI:
     def __init__(self, api_key: str):
         self.api_key = api_key
-        self.base_url = "https://platform.runblob.io/v1/o1-photo"
+        self.base_url = "https://platform.runblob.io/v1/kling/o1-photo"
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -252,7 +252,7 @@ const fetch = require('node-fetch');
 class KlingO1PhotoAPI {
   constructor(apiKey) {
     this.apiKey = apiKey;
-    this.baseUrl = 'https://platform.runblob.io/v1/o1-photo';
+    this.baseUrl = 'https://platform.runblob.io/v1/kling/o1-photo';
   }
 
   async generate(params) {
@@ -343,7 +343,7 @@ client.generate({
 ### Async/Await Example
 ```javascript
 const generateImage = async () => {
-  const response = await fetch('https://platform.runblob.io/v1/o1-photo/generate', {
+  const response = await fetch('https://platform.runblob.io/v1/kling/o1-photo/generate', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer YOUR_API_KEY',
@@ -364,7 +364,7 @@ const generateImage = async () => {
 
 // With reference images
 const generateWithReferences = async () => {
-  const response = await fetch('https://platform.runblob.io/v1/o1-photo/generate', {
+  const response = await fetch('https://platform.runblob.io/v1/kling/o1-photo/generate', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer YOUR_API_KEY',

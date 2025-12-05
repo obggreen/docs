@@ -60,7 +60,7 @@ description: "Real-time notifications for video generation events"
     {
       "success": true,
       "message": "Task completed successfully",
-      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "video_url": "https://cdn.runblob.io/videos/your-video.mp4"
     }
     ```
@@ -71,7 +71,7 @@ description: "Real-time notifications for video generation events"
     <ResponseField name="message" type="string">
       Human-readable success message
     </ResponseField>
-    <ResponseField name="task_id" type="string">
+    <ResponseField name="generation_id" type="string">
       UUID of the completed task
     </ResponseField>
     <ResponseField name="video_url" type="string">
@@ -86,7 +86,7 @@ description: "Real-time notifications for video generation events"
     {
       "success": false,
       "message": "UNSAFE_CONTENT",
-      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "video_url": null
     }
     ```
@@ -97,7 +97,7 @@ description: "Real-time notifications for video generation events"
     <ResponseField name="message" type="string">
       Machine-readable error code (see [Error Codes](/api-reference/veo3/errors))
     </ResponseField>
-    <ResponseField name="task_id" type="string">
+    <ResponseField name="generation_id" type="string">
       UUID of the failed task
     </ResponseField>
     <ResponseField name="video_url" type="null">
@@ -112,7 +112,7 @@ description: "Real-time notifications for video generation events"
     {
       "success": false,
       "message": "TIMEOUT",
-      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "video_url": null
     }
     ```
@@ -147,7 +147,7 @@ description: "Real-time notifications for video generation events"
     
     **IP Allowlist:** Consider restricting access to RunBlob's IP ranges
     
-    **Validation:** Always validate the task_id in your webhook handler
+    **Validation:** Always validate the generation_id in your webhook handler
   </Accordion>
 </AccordionGroup>
 
@@ -166,29 +166,29 @@ logging.basicConfig(level=logging.INFO)
 def runblob_webhook():
     try:
         data = request.json
-        task_id = data.get('task_id')
+        generation_id = data.get('generation_id')
         
         if data.get('success'):
             video_url = data.get('video_url')
-            logging.info(f"Video ready for task {task_id}: {video_url}")
+            logging.info(f"Video ready for {generation_id}: {video_url}")
             # Process successful generation
-            process_video(task_id, video_url)
+            process_video(generation_id, video_url)
         else:
             error_code = data.get('message')
-            logging.error(f"Generation failed for task {task_id}: {error_code}")
+            logging.error(f"Generation failed for {generation_id}: {error_code}")
             # Handle failure
-            handle_failure(task_id, error_code)
+            handle_failure(generation_id, error_code)
         
         return jsonify({'status': 'received'}), 200
     except Exception as e:
         logging.error(f"Webhook error: {str(e)}")
         return jsonify({'error': 'Internal error'}), 500
 
-def process_video(task_id, video_url):
+def process_video(generation_id, video_url):
     # Your video processing logic here
     pass
 
-def handle_failure(task_id, error_code):
+def handle_failure(generation_id, error_code):
     # Your error handling logic here
     pass
 ```
@@ -201,16 +201,16 @@ app.use(express.json());
 
 app.post('/webhook', (req, res) => {
   try {
-    const { success, task_id, video_url, message } = req.body;
+    const { success, generation_id, video_url, message } = req.body;
     
     if (success) {
-      console.log(`Video ready for task ${task_id}: ${video_url}`);
+      console.log(`Video ready for ${generation_id}: ${video_url}`);
       // Process successful generation
-      processVideo(task_id, video_url);
+      processVideo(generation_id, video_url);
     } else {
-      console.error(`Generation failed for task ${task_id}: ${message}`);
+      console.error(`Generation failed for ${generation_id}: ${message}`);
       // Handle failure
-      handleFailure(task_id, message);
+      handleFailure(generation_id, message);
     }
     
     res.status(200).json({ status: 'received' });
@@ -220,11 +220,11 @@ app.post('/webhook', (req, res) => {
   }
 });
 
-function processVideo(taskId, videoUrl) {
+function processVideo(generationId, videoUrl) {
   // Your video processing logic here
 }
 
-function handleFailure(taskId, errorCode) {
+function handleFailure(generationId, errorCode) {
   // Your error handling logic here
 }
 

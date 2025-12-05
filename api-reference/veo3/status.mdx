@@ -3,12 +3,12 @@ title: "Check Status"
 description: "Monitor video generation progress"
 ---
 
-## GET /v1/veo/status/{task_id}
+## GET /v1/veo/status/{generation_id}
 
 Check the current status of your video generation task.
 
-<ParamField path="task_id" type="string" required>
-  Task UUID returned from the generate endpoint
+<ParamField path="generation_id" type="string" required>
+  Generation UUID returned from the generate endpoint
 </ParamField>
 
 <Accordion title="Status Values">
@@ -49,7 +49,7 @@ response = requests.get(
     ```json
     {
       "status": "completed",
-      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "message": "Task completed successfully",
       "video_url": "https://your-video.mp4"
     }
@@ -59,7 +59,7 @@ response = requests.get(
     ```json
     {
       "status": "failed",
-      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "message": "UNSAFE_CONTENT",
       "video_url": null
     }
@@ -69,7 +69,7 @@ response = requests.get(
     ```json
     {
       "status": "processing",
-      "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "message": "Task is being processed"
     }
     ```
