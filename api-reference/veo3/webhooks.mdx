@@ -58,24 +58,40 @@ description: "Real-time notifications for video generation events"
     
     ```json
     {
+      "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
       "status": "completed",
-      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "message": "Task completed successfully",
-      "video_url": "https://cdn.runblob.io/videos/your-video.mp4"
+      "prompt": "A cat playing with a ball in a sunny room",
+      "video_url": "https://cdn.runblob.io/videos/your-video.mp4",
+      "created_at": "2025-12-06T21:43:03.374000",
+      "completed_at": "2025-12-06T21:44:06.143000",
+      "seed": 319790131,
+      "error": null
     }
     ```
     
-    <ResponseField name="status" type="string">
-      Always `"completed"` for successful generations
-    </ResponseField>
     <ResponseField name="generation_id" type="string">
       UUID of the completed task
     </ResponseField>
-    <ResponseField name="message" type="string">
-      Human-readable success message
+    <ResponseField name="status" type="string">
+      Always `"completed"` for successful generations
+    </ResponseField>
+    <ResponseField name="prompt" type="string">
+      Original prompt used for generation
     </ResponseField>
     <ResponseField name="video_url" type="string">
       Direct download URL for the generated video
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
+      ISO 8601 timestamp when task was created
+    </ResponseField>
+    <ResponseField name="completed_at" type="string">
+      ISO 8601 timestamp when task completed
+    </ResponseField>
+    <ResponseField name="seed" type="number">
+      Random seed used for generation
+    </ResponseField>
+    <ResponseField name="error" type="null">
+      Always `null` for successful generations
     </ResponseField>
   </Tab>
   
@@ -84,20 +100,21 @@ description: "Real-time notifications for video generation events"
     
     ```json
     {
+      "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
       "status": "failed",
-      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "message": "UNSAFE_CONTENT",
-      "video_url": null
+      "prompt": "A cat playing with a ball in a sunny room",
+      "video_url": null,
+      "created_at": "2025-12-06T21:43:03.374000",
+      "completed_at": "2025-12-06T21:44:06.143000",
+      "seed": 319790131,
+      "error": "UNSAFE_CONTENT"
     }
     ```
     
     <ResponseField name="status" type="string">
       Always `"failed"` for failed generations
     </ResponseField>
-    <ResponseField name="generation_id" type="string">
-      UUID of the failed task
-    </ResponseField>
-    <ResponseField name="message" type="string">
+    <ResponseField name="error" type="string">
       Machine-readable error code (see [Error Codes](/api-reference/veo3/errors))
     </ResponseField>
     <ResponseField name="video_url" type="null">
@@ -110,10 +127,14 @@ description: "Real-time notifications for video generation events"
     
     ```json
     {
+      "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
       "status": "failed",
-      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "message": "TIMEOUT",
-      "video_url": null
+      "prompt": "A cat playing with a ball in a sunny room",
+      "video_url": null,
+      "created_at": "2025-12-06T21:43:03.374000",
+      "completed_at": "2025-12-06T21:44:06.143000",
+      "seed": 319790131,
+      "error": "TIMEOUT"
     }
     ```
     

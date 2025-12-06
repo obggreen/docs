@@ -47,29 +47,56 @@ response = requests.get(
   <Tab title="Completed">
     ```json
     {
+      "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
       "status": "completed",
-      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "message": "Task completed successfully",
-      "video_url": "https://your-video.mp4"
+      "prompt": "A cat playing with a ball in a sunny room",
+      "video_url": "https://your-video.mp4",
+      "created_at": "2025-12-06T21:43:03.374000",
+      "completed_at": "2025-12-06T21:44:06.143000",
+      "seed": 319790131,
+      "error": null
     }
     ```
   </Tab>
   <Tab title="Failed">
     ```json
     {
+      "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
       "status": "failed",
-      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "message": "UNSAFE_CONTENT",
-      "video_url": null
+      "prompt": "A cat playing with a ball in a sunny room",
+      "video_url": null,
+      "created_at": "2025-12-06T21:43:03.374000",
+      "completed_at": "2025-12-06T21:44:06.143000",
+      "seed": 319790131,
+      "error": "UNSAFE_CONTENT"
     }
     ```
   </Tab>
   <Tab title="Processing">
     ```json
     {
+      "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
       "status": "processing",
-      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "message": "Task is being processed"
+      "prompt": "A cat playing with a ball in a sunny room",
+      "video_url": null,
+      "created_at": "2025-12-06T21:43:03.374000",
+      "completed_at": null,
+      "seed": 319790131,
+      "error": null
+    }
+    ```
+  </Tab>
+  <Tab title="Pending">
+    ```json
+    {
+      "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
+      "status": "pending",
+      "prompt": "A cat playing with a ball in a sunny room",
+      "video_url": null,
+      "created_at": "2025-12-06T21:43:03.374000",
+      "completed_at": null,
+      "seed": 319790131,
+      "error": null
     }
     ```
   </Tab>
