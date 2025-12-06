@@ -160,10 +160,28 @@ response = requests.post(
 
 ```json
 {
-  "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "status": "pending"
+  "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
+  "status": "pending",
+  "seed": 319790131,
+  "price": "0.2500"
 }
 ```
+
+<ResponseField name="generation_id" type="string">
+  UUID of the generation task for status checking
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Initial status, always `"pending"`
+</ResponseField>
+
+<ResponseField name="seed" type="number">
+  Random seed used for generation (for reproducibility)
+</ResponseField>
+
+<ResponseField name="price" type="string">
+  Amount charged in USD
+</ResponseField>
 
 <Note>
   Video generation typically takes 1-10 minutes. Use the `generation_id` to check status or set up webhooks for notifications.
