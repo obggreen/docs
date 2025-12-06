@@ -3,7 +3,7 @@ title: "Check Status"
 description: "Monitor video generation progress"
 ---
 
-## GET /v1/veo/status/{generation_id}
+## GET /v1/veo/generations/{generation_id}
 
 Check the current status of your video generation task.
 
@@ -29,15 +29,14 @@ Check the current status of your video generation task.
 <CodeGroup>
 
 ```bash cURL
-curl -X GET https://platform.runblob.io/v1/veo/status/a1b2c3d4-e5f6-7890 \
-  -H "Authorization: Bearer YOUR_API_KEY"
+curl -X GET https://platform.runblob.io/v1/veo/generations/ffd473d5-5bef-4e14-bf22-8d559be3c19f -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ```python Python
 import requests
 
 response = requests.get(
-    "https://platform.runblob.io/v1/veo/status/a1b2c3d4-e5f6-7890",
+    "https://platform.runblob.io/v1/veo/generations/ffd473d5-5bef-4e14-bf22-8d559be3c19f",
     headers={"Authorization": "Bearer YOUR_API_KEY"}
 )
 ```

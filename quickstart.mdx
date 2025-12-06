@@ -57,19 +57,18 @@ description: "Generate your first video in 3 simple steps"
 
     <CodeGroup>
     ```bash cURL
-    curl -X GET https://platform.runblob.io/v1/veo/status/a1b2c3d4-e5f6-7890 \
-      -H "Authorization: Bearer YOUR_API_KEY"
+    curl -X GET https://platform.runblob.io/v1/veo/generations/ffd473d5-5bef-4e14-bf22-8d559be3c19f -H "Authorization: Bearer YOUR_API_KEY"
     ```
 
     ```python Python
     import requests
     import time
 
-    generation_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    generation_id = "ffd473d5-5bef-4e14-bf22-8d559be3c19f"
     
     while True:
         response = requests.get(
-            f"https://platform.runblob.io/v1/veo/status/{generation_id}",
+            f"https://platform.runblob.io/v1/veo/generations/{generation_id}",
             headers={"Authorization": "Bearer YOUR_API_KEY"}
         )
         result = response.json()
@@ -90,7 +89,7 @@ description: "Generate your first video in 3 simple steps"
     ```json
     {
       "status": "completed",
-      "generation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "generation_id": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
       "message": "Task completed successfully",
       "video_url": "https://your-video.mp4"
     }

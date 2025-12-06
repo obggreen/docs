@@ -46,8 +46,7 @@ curl -X POST https://platform.runblob.io/v1/veo/generate \
 
 ### Check Status
 ```bash
-curl -X GET https://platform.runblob.io/v1/veo/status/GENERATION_ID \
-  -H "Authorization: Bearer YOUR_API_KEY"
+curl -X GET https://platform.runblob.io/v1/veo/generations/GENERATION_ID -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ## Python
@@ -103,7 +102,7 @@ class VeoClient:
     
     def status(self, generation_id):
         response = requests.get(
-            f"{self.base_url}/v1/veo/status/{generation_id}",
+            f"{self.base_url}/v1/veo/generations/{generation_id}",
             headers=self.headers
         )
         return response.json()
