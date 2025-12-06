@@ -15,8 +15,12 @@ Creates an image generation task from text description using Kling O1 Photo mode
   Text description of the image (1-2500 characters)
 </ParamField>
 
-<ParamField path="input_images" type="array">
+<ParamField path="images_url" type="array">
   Array of up to 5 image URLs for reference-based generation
+</ParamField>
+
+<ParamField path="images_base64" type="array">
+  Array of up to 5 base64-encoded images for reference-based generation
 </ParamField>
 
 <ParamField path="img_resolution" type="string" default="2k">
@@ -52,13 +56,13 @@ curl -X POST https://platform.runblob.io/v1/kling/o1-photo/generate \
   }'
 ```
 
-```bash With Reference Images
+```bash With Reference Images (URLs)
 curl -X POST https://platform.runblob.io/v1/kling/o1-photo/generate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Combine these images into a beautiful collage with a sunset theme",
-    "input_images": [
+    "images_url": [
       "https://your-storage.com/image1.jpg",
       "https://your-storage.com/image2.jpg",
       "https://your-storage.com/image3.jpg"
@@ -66,6 +70,21 @@ curl -X POST https://platform.runblob.io/v1/kling/o1-photo/generate \
     "img_resolution": "2k",
     "aspect_ratio": "1:1",
     "callback_url": "https://your-app.com/webhooks/kling-photo"
+  }'
+```
+
+```bash With Reference Images (Base64)
+curl -X POST https://platform.runblob.io/v1/kling/o1-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Combine these images into a beautiful collage",
+    "images_base64": [
+      "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+      "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
+    ],
+    "img_resolution": "2k",
+    "aspect_ratio": "1:1"
   }'
 ```
 
@@ -86,7 +105,7 @@ response = requests.post(
     }
 )
 
-# With reference images
+# With reference images (URLs)
 response = requests.post(
     "https://platform.runblob.io/v1/kling/o1-photo/generate",
     headers={
@@ -95,9 +114,27 @@ response = requests.post(
     },
     json={
         "prompt": "Combine these images into a beautiful collage",
-        "input_images": [
+        "images_url": [
             "https://your-storage.com/image1.jpg",
             "https://your-storage.com/image2.jpg"
+        ],
+        "img_resolution": "2k",
+        "aspect_ratio": "1:1"
+    }
+)
+
+# With reference images (Base64)
+response = requests.post(
+    "https://platform.runblob.io/v1/kling/o1-photo/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Combine these images into a beautiful collage",
+        "images_base64": [
+            "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+            "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
         ],
         "img_resolution": "2k",
         "aspect_ratio": "1:1"
@@ -139,11 +176,12 @@ response = requests.post(
 
 <AccordionGroup>
   <Accordion icon="images" title="Reference Images">
-    **Use up to 5 input images:**
-    - Provide URLs of reference images
-    - Images should be accessible via HTTPS
+    **Use up to 5 input images (total from both sources):**
+    - `images_url`: Provide URLs of reference images (HTTPS)
+    - `images_base64`: Provide base64-encoded images
     - Supports JPEG, PNG, WEBP formats
     - AI will use them as visual reference for generation
+    - Maximum 10 MB per image
   </Accordion>
   
   <Accordion icon="expand" title="Resolution Options">
