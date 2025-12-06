@@ -97,7 +97,7 @@ curl -X GET https://platform.runblob.io/v1/kling/generations/GENERATION_ID \
 
 ### Check Photo Status
 ```bash
-curl -X GET https://platform.runblob.io/v1/kling/o1-photo/status/GENERATION_ID \
+curl -X GET https://platform.runblob.io/v1/kling/o1-photo/generations/GENERATION_ID \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -200,7 +200,7 @@ class KlingO1PhotoClient:
     
     def status(self, generation_id):
         response = requests.get(
-            f"{self.base_url}/v1/kling/o1-photo/status/{generation_id}",
+            f"{self.base_url}/v1/kling/o1-photo/generations/{generation_id}",
             headers=self.headers
         )
         return response.json()
@@ -476,7 +476,7 @@ const photoWithRefsResponse = await fetch('https://platform.runblob.io/v1/kling/
     img_resolution: '2k',
     aspect_ratio: '1:1'
   })
-});
+  });
 ```
 
 ### Image-to-Video with URL
