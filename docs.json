@@ -76,6 +76,17 @@
             ]
           },
           {
+            "group": "Kling O1 Videos",
+            "icon": "video",
+            "pages": [
+              "api-reference/kling/video-generate",
+              "api-reference/kling/video-status",
+              "api-reference/kling/video-webhooks",
+              "api-reference/kling/video-errors",
+              "api-reference/kling/video-examples"
+            ]
+          },
+          {
             "group": "Sora 2 Videos",
             "icon": "wand-magic-sparkles",
             "pages": [

@@ -1,0 +1,271 @@
+---
+title: "Error Codes"
+description: "Comprehensive error handling guide for O1 Video"
+---
+
+<Info>
+  All errors return specific codes in the `message` field for programmatic handling.
+</Info>
+
+## Error Categories
+
+<Tabs>
+  <Tab title="User Errors">
+    Issues caused by invalid requests or insufficient resources.
+    
+    <AccordionGroup>
+      <Accordion icon="credit-card" title="INSUFFICIENT_CREDITS">
+        **Description:** Not enough credits to complete the request
+        
+        **Solution:** Add more credits to your account
+        
+        ```json
+        {
+          "detail": "INSUFFICIENT_CREDITS"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="question-circle" title="Generation Not Found">
+        **Description:** Generation with specified ID does not exist
+        
+        **Solution:** Verify the generation ID is correct
+        
+        ```json
+        {
+          "detail": "Generation not found"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="exclamation-triangle" title="Invalid Duration">
+        **Description:** Duration not allowed for selected generation mode
+        
+        **Solution:** Use `"5"` or `"10"` for text-to-video, or provide images for custom durations
+        
+        ```json
+        {
+          "detail": "Duration 3 seconds is only available for image-to-video generation"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="image" title="INVALID_IMAGE">
+        **Description:** One or more input images are not valid
+        
+        **Solution:** Ensure you're uploading valid JPEG, PNG, or WEBP files under 10MB
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "INVALID_IMAGE"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="link-slash" title="IMAGE_INACCESSIBLE">
+        **Description:** One or more image URLs returned 404 or 403
+        
+        **Solution:** Verify all image URLs are publicly accessible
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "IMAGE_INACCESSIBLE"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="hashtag" title="Too Many Images">
+        **Description:** More than 5 images provided
+        
+        **Solution:** Limit images to maximum of 5 per request
+        
+        ```json
+        {
+          "detail": "Maximum 5 images allowed"
+        }
+        ```
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  
+  <Tab title="Content Errors">
+    Issues with prompt content or uploaded images.
+    
+    <AccordionGroup>
+      <Accordion icon="shield-exclamation" title="CONTENT_POLICY_VIOLATION">
+        **Description:** Content violates usage policies
+        
+        **Solution:** Modify your prompt to comply with content guidelines
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "CONTENT_POLICY_VIOLATION"
+        }
+        ```
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+  
+  <Tab title="System Errors">
+    Technical issues on RunBlob or Kling's side.
+    
+    <AccordionGroup>
+      <Accordion icon="clock" title="TIMEOUT">
+        **Description:** Task exceeded maximum processing time (15 minutes)
+        
+        **Action:** Credits are automatically refunded
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "TIMEOUT"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="ban" title="TASK_FAILED">
+        **Description:** Generation failed due to Kling API error
+        
+        **Action:** Credits are automatically refunded, try again
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "TASK_FAILED"
+        }
+        ```
+      </Accordion>
+      
+      <Accordion icon="wrench" title="MAINTENANCE">
+        **Description:** Service is temporarily unavailable
+        
+        **Action:** Wait and retry your request later
+        
+        ```json
+        {
+          "status": "failed",
+          "message": "MAINTENANCE"
+        }
+        ```
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+</Tabs>
+
+## Complete Error Reference
+
+<ResponseField name="INSUFFICIENT_CREDITS" type="User Error" icon="credit-card">
+  Not enough credits to complete the request
+</ResponseField>
+
+<ResponseField name="CONTENT_POLICY_VIOLATION" type="Content Error" icon="shield-exclamation">
+  Content violates usage policies (adult, violence, prohibited content)
+</ResponseField>
+
+<ResponseField name="IMAGE_INACCESSIBLE" type="User Error" icon="link-slash">
+  One or more image URLs are inaccessible (404, 403)
+</ResponseField>
+
+<ResponseField name="INVALID_IMAGE" type="User Error" icon="image">
+  Image format is invalid or corrupted
+</ResponseField>
+
+<ResponseField name="TIMEOUT" type="System Error" icon="clock">
+  Task exceeded maximum processing time (15 minutes)
+</ResponseField>
+
+<ResponseField name="TASK_FAILED" type="System Error" icon="ban">
+  Generation failed due to system error
+</ResponseField>
+
+<ResponseField name="MAINTENANCE" type="System Error" icon="wrench">
+  Service is temporarily unavailable
+</ResponseField>
+
+## HTTP Status Code Reference
+
+<ResponseField name="201" type="Created">
+  Generation created successfully
+</ResponseField>
+
+<ResponseField name="200" type="OK">
+  Request successful
+</ResponseField>
+
+<ResponseField name="400" type="Bad Request">
+  Invalid parameters or request format
+</ResponseField>
+
+<ResponseField name="401" type="Unauthorized">
+  Invalid or missing API key
+</ResponseField>
+
+<ResponseField name="402" type="Payment Required">
+  Insufficient credits
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  Generation not found
+</ResponseField>
+
+<ResponseField name="422" type="Validation Error">
+  Invalid input format or missing required fields
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server-side error
+</ResponseField>
+
+<ResponseField name="503" type="Service Unavailable">
+  Service temporarily unavailable
+</ResponseField>
+
+## Common Issues & Solutions
+
+### Issue: "Duration X seconds is only available for image-to-video"
+
+**Cause:** Using duration `"3"`, `"4"`, `"6"`, `"7"`, `"8"`, or `"9"` without providing images.
+
+**Solution:**
+- Use `"5"` or `"10"` for text-to-video
+- OR provide images to use custom durations
+
+---
+
+### Issue: "IMAGE_INACCESSIBLE" error
+
+**Cause:** The provided `images_urls` returned 404 or 403.
+
+**Solution:**
+- Verify URLs are publicly accessible
+- Check URLs don't require authentication
+- Use `images_base64` instead if URLs are private
+
+---
+
+### Issue: "CONTENT_POLICY_VIOLATION"
+
+**Cause:** AI detected prohibited content (adult, violence, etc.)
+
+**Solution:**
+- Review and modify your prompt
+- Check input images for inappropriate content
+- Avoid explicit or graphic descriptions
+
+---
+
+### Issue: Generation stuck in "pending"
+
+**Cause:** Workers might be overloaded or service experiencing high load.
+
+**Solution:**
+- Wait 1-2 minutes, status should change to "processing"
+- If stuck for >5 minutes, contact support with `generation_id`
+
+<Warning>
+  Always handle errors programmatically using the error codes, not human-readable messages.
+</Warning>
+

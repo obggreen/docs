@@ -1,0 +1,124 @@
+---
+title: "Check Status"
+description: "Monitor video generation progress"
+---
+
+## GET /v1/kling/o1-video/generations/{generation_id}
+
+Check the current status of your video generation task.
+
+<ParamField path="generation_id" type="string" required>
+  Generation UUID returned from the generate endpoint
+</ParamField>
+
+<Accordion title="Status Values">
+  <ResponseField name="pending" type="string">
+    Task is in queue waiting to be processed
+  </ResponseField>
+  <ResponseField name="processing" type="string">
+    Video is currently being generated
+  </ResponseField>
+  <ResponseField name="completed" type="string">
+    Video generation completed successfully
+  </ResponseField>
+  <ResponseField name="failed" type="string">
+    Video generation failed with error
+  </ResponseField>
+</Accordion>
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://platform.runblob.io/v1/kling/o1-video/generations/550e8400-e29b-41d4-a716-446655440000 -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://platform.runblob.io/v1/kling/o1-video/generations/550e8400-e29b-41d4-a716-446655440000",
+    headers={"Authorization": "Bearer YOUR_API_KEY"}
+)
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://platform.runblob.io/v1/kling/o1-video/generations/550e8400-e29b-41d4-a716-446655440000',
+  {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY'
+    }
+  }
+);
+
+const data = await response.json();
+console.log(data);
+```
+
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Completed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "completed",
+      "prompt": "A cinematic shot of a cat walking",
+      "video_url": "https://cdn.example.com/videos/abc123.mp4",
+      "model": "kling_o1_video"
+    }
+    ```
+  </Tab>
+  <Tab title="Failed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "prompt": "A cinematic shot of a cat walking",
+      "video_url": null,
+      "model": "kling_o1_video"
+    }
+    ```
+  </Tab>
+  <Tab title="Processing">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "processing",
+      "prompt": "A cinematic shot of a cat walking",
+      "video_url": null,
+      "model": "kling_o1_video"
+    }
+    ```
+  </Tab>
+  <Tab title="Pending">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "pending",
+      "prompt": "A cinematic shot of a cat walking",
+      "video_url": null,
+      "model": "kling_o1_video"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Timeline
+
+Expected generation timeline:
+
+| Stage | Duration | Description |
+|-------|----------|-------------|
+| Pending → Processing | 10-30 seconds | Task is queued and starting |
+| Processing → Completed | 1-10 minutes | AI is generating the video |
+| **Total Timeout** | 15 minutes | Maximum time before automatic failure |
+
+<Info>
+  If a generation exceeds 15 minutes, it will automatically fail and credits will be refunded.
+</Info>
+
+<Warning>
+  Tasks timeout after 15 minutes. Failed tasks return specific error codes in webhooks or status responses.
+</Warning>
+
