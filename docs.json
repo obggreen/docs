@@ -4,7 +4,8 @@
   "description": "Transform text into professional videos with AI. Powered by Google Veo3.",
   "logo": {
     "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "light": "/logo/light.svg",
+    "height": 34
   },
   "favicon": "logo.svg",
  "colors": {
