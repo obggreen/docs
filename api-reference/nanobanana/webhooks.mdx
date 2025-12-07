@@ -1,0 +1,133 @@
+---
+title: "Webhooks"
+description: "Receive real-time notifications when generations complete"
+---
+
+## Setting Up Webhooks
+
+Pass `callback_url` when creating a generation to receive notifications:
+
+```bash
+curl -X POST https://platform.runblob.io/v1/gemini/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A cute orange cat",
+    "callback_url": "https://your-server.com/webhook"
+  }'
+```
+
+## Webhook Payload
+
+When generation completes (success or failure), we send a POST request to your `callback_url`:
+
+### Success Payload
+
+```json
+{
+  "task_uuid": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
+  "status": "completed",
+  "result_image_url": "https://storage.runblob.io/nanobanana/outputs/2025/12/ffd473d5.png",
+  "message": null
+}
+```
+
+### Failure Payload
+
+```json
+{
+  "task_uuid": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
+  "status": "failed",
+  "result_image_url": null,
+  "message": "MODERATION_FAILED"
+}
+```
+
+## Webhook Fields
+
+<ResponseField name="task_uuid" type="string">
+  UUID of the completed generation
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Final status: `"completed"` or `"failed"`
+</ResponseField>
+
+<ResponseField name="result_image_url" type="string">
+  URL of generated image (only for `completed` status)
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Error code if failed, otherwise `null`
+</ResponseField>
+
+## Handling Webhooks
+
+<CodeGroup>
+
+```python Python (Flask)
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def handle_webhook():
+    data = request.json
+    
+    if data['status'] == 'completed':
+        print(f"Image ready: {data['result_image_url']}")
+        # Download and process the image
+    else:
+        print(f"Generation failed: {data['message']}")
+        # Handle error
+    
+    return 'OK', 200
+```
+
+```javascript Node.js (Express)
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/webhook', (req, res) => {
+  const { task_uuid, status, result_image_url, message } = req.body;
+  
+  if (status === 'completed') {
+    console.log(`Image ready: ${result_image_url}`);
+    // Download and process the image
+  } else {
+    console.log(`Generation failed: ${message}`);
+    // Handle error
+  }
+  
+  res.sendStatus(200);
+});
+```
+
+</CodeGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion icon="shield-check" title="Validate Requests">
+    Verify that webhook requests are coming from RunBlob by checking the request origin or implementing signature verification.
+  </Accordion>
+  
+  <Accordion icon="clock" title="Respond Quickly">
+    Return a 2xx response within 5 seconds. Process the webhook asynchronously if needed.
+  </Accordion>
+  
+  <Accordion icon="rotate" title="Handle Retries">
+    Implement idempotency - we may retry failed webhook deliveries. Use `task_uuid` to deduplicate.
+  </Accordion>
+  
+  <Accordion icon="server" title="Use HTTPS">
+    Always use HTTPS endpoints for webhooks to ensure secure data transmission.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  If your webhook endpoint returns an error (4xx/5xx) or times out, we will retry up to 3 times with exponential backoff.
+</Warning>
+

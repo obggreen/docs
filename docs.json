@@ -85,6 +85,17 @@
               "api-reference/sora/errors",
               "api-reference/sora/examples"
             ]
+          },
+          {
+            "group": "Nano Banana Images",
+            "icon": "image-polaroid",
+            "pages": [
+              "api-reference/nanobanana/generate",
+              "api-reference/nanobanana/status",
+              "api-reference/nanobanana/webhooks",
+              "api-reference/nanobanana/errors",
+              "api-reference/nanobanana/examples"
+            ]
           }
         ]
       }

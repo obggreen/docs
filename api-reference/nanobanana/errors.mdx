@@ -1,0 +1,103 @@
+---
+title: "Error Codes"
+description: "Understanding Nano Banana error responses"
+---
+
+## Error Response Format
+
+When a generation fails, the `message` field contains the error code:
+
+```json
+{
+  "task_uuid": "ffd473d5-5bef-4e14-bf22-8d559be3c19f",
+  "status": "failed",
+  "prompt": "...",
+  "result_image_url": null,
+  "message": "MODERATION_FAILED"
+}
+```
+
+## Error Codes
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| `INSUFFICIENT_CREDITS` | Not enough balance | Top up your account |
+| `MODERATION_FAILED` | Content blocked by safety filters | Modify your prompt |
+| `API_ERROR` | External API error | Retry the request |
+| `TASK_FAILED` | Internal generation error | Retry the request |
+| `TIMEOUT` | Generation took too long | Retry with simpler prompt |
+| `INVALID_IMAGE` | Invalid input image | Check image format/encoding |
+| `IMAGE_TOO_LARGE` | Image exceeds 20MB limit | Compress the image |
+| `UNSUPPORTED_IMAGE_FORMAT` | Wrong image format | Use JPEG, PNG, or WEBP |
+
+## HTTP Status Codes
+
+| Status | Description |
+|--------|-------------|
+| `201` | Generation created successfully |
+| `400` | Invalid request parameters |
+| `401` | Invalid or missing API key |
+| `402` | Insufficient credits |
+| `404` | Generation not found |
+| `500` | Internal server error |
+
+## Request Validation Errors
+
+### Invalid Model/Quality Combination
+
+```json
+{
+  "detail": "Quality 2k/4k is only available for Pro model"
+}
+```
+
+**Solution:** Use `quality` parameter only with `model: "pro"`
+
+### Invalid Prompt Length
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "prompt"],
+      "msg": "String should have at least 1 character",
+      "type": "string_too_short"
+    }
+  ]
+}
+```
+
+**Solution:** Provide a prompt between 1-4000 characters
+
+### Invalid Temperature
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "temperature"],
+      "msg": "Input should be less than or equal to 1",
+      "type": "less_than_equal"
+    }
+  ]
+}
+```
+
+**Solution:** Use temperature between 0 and 1
+
+## Automatic Refunds
+
+<Info>
+  When a generation fails, credits are **automatically refunded** to your account. No action required.
+</Info>
+
+Refunds are issued for:
+- `MODERATION_FAILED`
+- `API_ERROR`
+- `TASK_FAILED`
+- `TIMEOUT`
+
+<Note>
+  Check your transaction history in the dashboard to see refund details.
+</Note>
+

@@ -1,0 +1,287 @@
+---
+title: "Examples"
+description: "Complete code examples for Nano Banana integration"
+---
+
+## Quick Start
+
+Generate your first image in under a minute:
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://platform.runblob.io/v1/gemini/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "A magical forest with glowing mushrooms"}'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://platform.runblob.io/v1/gemini/generate",
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+    json={"prompt": "A magical forest with glowing mushrooms"}
+)
+print(response.json())
+```
+
+</CodeGroup>
+
+## Full Integration Example
+
+### Python with Polling
+
+```python
+import requests
+import time
+
+API_KEY = "YOUR_API_KEY"
+BASE_URL = "https://platform.runblob.io"
+
+def generate_image(prompt, model="standard", aspect_ratio="auto"):
+    """Create an image generation task."""
+    response = requests.post(
+        f"{BASE_URL}/v1/gemini/generate",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "prompt": prompt,
+            "model": model,
+            "aspect_ratio": aspect_ratio
+        }
+    )
+    response.raise_for_status()
+    return response.json()
+
+def check_status(task_uuid):
+    """Check generation status."""
+    response = requests.get(
+        f"{BASE_URL}/v1/gemini/generations/{task_uuid}",
+        headers={"Authorization": f"Bearer {API_KEY}"}
+    )
+    response.raise_for_status()
+    return response.json()
+
+def wait_for_completion(task_uuid, timeout=120):
+    """Poll until generation completes."""
+    start = time.time()
+    while time.time() - start < timeout:
+        result = check_status(task_uuid)
+        
+        if result["status"] == "completed":
+            return result["result_image_url"]
+        elif result["status"] == "failed":
+            raise Exception(f"Generation failed: {result['message']}")
+        
+        time.sleep(2)
+    
+    raise TimeoutError("Generation timed out")
+
+# Usage
+task = generate_image(
+    prompt="A cyberpunk city at night with neon lights",
+    model="pro",
+    aspect_ratio="16:9"
+)
+print(f"Task created: {task['task_uuid']}")
+
+image_url = wait_for_completion(task["task_uuid"])
+print(f"Image ready: {image_url}")
+```
+
+### JavaScript with Async/Await
+
+```javascript
+const API_KEY = 'YOUR_API_KEY';
+const BASE_URL = 'https://platform.runblob.io';
+
+async function generateImage(prompt, options = {}) {
+  const response = await fetch(`${BASE_URL}/v1/gemini/generate`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      prompt,
+      model: options.model || 'standard',
+      aspect_ratio: options.aspectRatio || 'auto',
+      temperature: options.temperature || 0.7
+    })
+  });
+  
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+async function checkStatus(taskUuid) {
+  const response = await fetch(
+    `${BASE_URL}/v1/gemini/generations/${taskUuid}`,
+    { headers: { 'Authorization': `Bearer ${API_KEY}` } }
+  );
+  
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+async function waitForCompletion(taskUuid, timeout = 120000) {
+  const start = Date.now();
+  
+  while (Date.now() - start < timeout) {
+    const result = await checkStatus(taskUuid);
+    
+    if (result.status === 'completed') {
+      return result.result_image_url;
+    } else if (result.status === 'failed') {
+      throw new Error(`Generation failed: ${result.message}`);
+    }
+    
+    await new Promise(r => setTimeout(r, 2000));
+  }
+  
+  throw new Error('Generation timed out');
+}
+
+// Usage
+(async () => {
+  const task = await generateImage('A magical forest', {
+    model: 'pro',
+    aspectRatio: '16:9'
+  });
+  
+  console.log('Task created:', task.task_uuid);
+  
+  const imageUrl = await waitForCompletion(task.task_uuid);
+  console.log('Image ready:', imageUrl);
+})();
+```
+
+## Image Editing Example
+
+Transform an existing image:
+
+```python
+import base64
+import requests
+
+# Read and encode image
+with open("input.jpg", "rb") as f:
+    image_base64 = base64.b64encode(f.read()).decode()
+
+# Generate with input image
+response = requests.post(
+    "https://platform.runblob.io/v1/gemini/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Transform this photo into a watercolor painting",
+        "model": "pro",
+        "images": [f"data:image/jpeg;base64,{image_base64}"]
+    }
+)
+
+print(response.json())
+```
+
+## Batch Generation
+
+Generate multiple images concurrently:
+
+```python
+import asyncio
+import aiohttp
+
+API_KEY = "YOUR_API_KEY"
+BASE_URL = "https://platform.runblob.io"
+
+async def generate_async(session, prompt):
+    async with session.post(
+        f"{BASE_URL}/v1/gemini/generate",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={"prompt": prompt}
+    ) as response:
+        return await response.json()
+
+async def batch_generate(prompts):
+    async with aiohttp.ClientSession() as session:
+        tasks = [generate_async(session, p) for p in prompts]
+        return await asyncio.gather(*tasks)
+
+# Generate 5 images at once
+prompts = [
+    "A red rose in morning dew",
+    "A blue butterfly on a flower",
+    "A golden sunset over ocean",
+    "A snowy mountain peak",
+    "A tropical beach paradise"
+]
+
+results = asyncio.run(batch_generate(prompts))
+for r in results:
+    print(f"Task: {r['task_uuid']}")
+```
+
+## Webhook Integration
+
+Using webhooks instead of polling:
+
+```python
+from flask import Flask, request
+import requests
+
+app = Flask(__name__)
+API_KEY = "YOUR_API_KEY"
+
+# Store pending tasks
+pending_tasks = {}
+
+@app.route('/generate', methods=['POST'])
+def create_generation():
+    prompt = request.json['prompt']
+    
+    response = requests.post(
+        "https://platform.runblob.io/v1/gemini/generate",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "prompt": prompt,
+            "callback_url": "https://your-server.com/webhook"
+        }
+    )
+    
+    data = response.json()
+    pending_tasks[data['task_uuid']] = {'prompt': prompt}
+    
+    return data
+
+@app.route('/webhook', methods=['POST'])
+def handle_webhook():
+    data = request.json
+    task_uuid = data['task_uuid']
+    
+    if data['status'] == 'completed':
+        print(f"✅ Image ready: {data['result_image_url']}")
+        # Process the image...
+    else:
+        print(f"❌ Failed: {data['message']}")
+    
+    # Cleanup
+    pending_tasks.pop(task_uuid, None)
+    
+    return 'OK', 200
+
+if __name__ == '__main__':
+    app.run(port=5000)
+```
+
