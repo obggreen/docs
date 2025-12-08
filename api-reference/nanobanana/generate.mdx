@@ -161,15 +161,6 @@ console.log(data.task_uuid);
   Image generation typically takes 7-30 seconds. Use the `task_uuid` to check status or set up webhooks for notifications.
 </Note>
 
-## Models & Pricing
-
-| Model | Quality | Price | Description |
-|-------|---------|-------|-------------|
-| `standard` | - | $0.02 | Fast generation, good quality |
-| `pro` | standard | $0.04 | Higher quality |
-| `pro` | 2k | $0.05 | 2K resolution |
-| `pro` | 4k | $0.08 | 4K resolution |
-
 <Warning>
   `quality` parameter (`2k`, `4k`) is only available for the `pro` model. Using it with `standard` model will result in an error.
 </Warning>
