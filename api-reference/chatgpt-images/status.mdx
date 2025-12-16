@@ -1,0 +1,110 @@
+---
+title: "Check Status"
+description: "Monitor image generation progress"
+---
+
+## GET /v1/chatgpt-images/generations/{task_uuid}
+
+Check the current status of your image generation task.
+
+<ParamField path="task_uuid" type="string" required>
+  Task UUID returned from the generate endpoint
+</ParamField>
+
+<Accordion title="Status Values">
+  <ResponseField name="pending" type="string">
+    Task is in queue waiting to be processed
+  </ResponseField>
+  <ResponseField name="processing" type="string">
+    Image is currently being generated
+  </ResponseField>
+  <ResponseField name="completed" type="string">
+    Image generation completed successfully
+  </ResponseField>
+  <ResponseField name="failed" type="string">
+    Image generation failed with error
+  </ResponseField>
+</Accordion>
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://platform.runblob.io/v1/chatgpt-images/generations/dc62d83d-1953-4bca-8554-222679a7a4a9 -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://platform.runblob.io/v1/chatgpt-images/generations/dc62d83d-1953-4bca-8554-222679a7a4a9",
+    headers={"Authorization": "Bearer YOUR_API_KEY"}
+)
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://platform.runblob.io/v1/chatgpt-images/generations/dc62d83d-1953-4bca-8554-222679a7a4a9',
+  {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY'
+    }
+  }
+);
+
+const data = await response.json();
+console.log(data);
+```
+
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Completed">
+    ```json
+    {
+      "task_uuid": "dc62d83d-1953-4bca-8554-222679a7a4a9",
+      "status": "completed",
+      "prompt": "cat and dog",
+      "result_image_url": "https://cdn.example.com/images/dc62d83d.png",
+      "message": null
+    }
+    ```
+  </Tab>
+  <Tab title="Failed">
+    ```json
+    {
+      "task_uuid": "dc62d83d-1953-4bca-8554-222679a7a4a9",
+      "status": "failed",
+      "prompt": "cat and dog",
+      "result_image_url": null,
+      "message": "OPENAI_DECLINED"
+    }
+    ```
+  </Tab>
+  <Tab title="Processing">
+    ```json
+    {
+      "task_uuid": "dc62d83d-1953-4bca-8554-222679a7a4a9",
+      "status": "processing",
+      "prompt": "cat and dog",
+      "result_image_url": null,
+      "message": null
+    }
+    ```
+  </Tab>
+  <Tab title="Pending">
+    ```json
+    {
+      "task_uuid": "dc62d83d-1953-4bca-8554-222679a7a4a9",
+      "status": "pending",
+      "prompt": "cat and dog",
+      "result_image_url": null,
+      "message": null
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+  Tasks timeout after a certain period. Failed tasks return specific error codes in the `message` field.
+</Warning>
+

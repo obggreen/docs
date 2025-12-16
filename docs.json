@@ -87,6 +87,17 @@
             ]
           },
           {
+            "group": "ChatGPT Image 1.5",
+            "icon": "image",
+            "pages": [
+              "api-reference/chatgpt-images/generate",
+              "api-reference/chatgpt-images/status",
+              "api-reference/chatgpt-images/webhooks",
+              "api-reference/chatgpt-images/errors",
+              "api-reference/chatgpt-images/examples"
+            ]
+          },
+          {
             "group": "Sora 2 Videos",
             "icon": "wand-magic-sparkles",
             "pages": [

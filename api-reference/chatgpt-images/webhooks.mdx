@@ -1,0 +1,224 @@
+---
+title: "Webhooks"
+description: "Real-time notifications for image generation events"
+---
+
+<Info>
+  Webhooks provide instant notifications when your image generation tasks complete, fail, or timeout. No more polling!
+</Info>
+
+## Setup Guide
+
+<Steps>
+  <Step title="Create Webhook Endpoint">
+    Set up an HTTPS endpoint that can receive POST requests.
+    
+    ```python
+    from flask import Flask, request, jsonify
+    
+    app = Flask(__name__)
+    
+    @app.route('/webhook/chatgpt-images', methods=['POST'])
+    def handle_webhook():
+        data = request.json
+        
+        if data['status'] == 'completed':
+            print(f"Image ready: {data['result_image_url']}")
+        else:
+            print(f"Generation failed: {data.get('message')}")
+            
+        return jsonify({'status': 'received'}), 200
+    ```
+  </Step>
+  
+  <Step title="Add Webhook URL">
+    Include your webhook URL when creating a generation task.
+    
+    ```bash
+    curl -X POST https://platform.runblob.io/v1/chatgpt-images/generate -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{
+      "prompt": "A beautiful landscape",
+      "callback_url": "https://your-app.com/webhook/chatgpt-images"
+    }'
+    ```
+  </Step>
+  
+  <Step title="Handle Notifications">
+    Your endpoint will receive instant notifications when tasks complete.
+  </Step>
+</Steps>
+
+## Payload Structure
+
+<Tabs>
+  <Tab title="Completed">
+    Sent when image generation completes successfully.
+    
+    ```json
+    {
+      "task_uuid": "dc62d83d-1953-4bca-8554-222679a7a4a9",
+      "status": "completed",
+      "prompt": "cat and dog",
+      "result_image_url": "https://cdn.example.com/images/dc62d83d.png",
+      "message": null
+    }
+    ```
+    
+    <ResponseField name="status" type="string">
+      Always `"completed"` for successful generations
+    </ResponseField>
+    <ResponseField name="task_uuid" type="string">
+      UUID of the completed task
+    </ResponseField>
+    <ResponseField name="result_image_url" type="string">
+      Direct download URL for the generated image
+    </ResponseField>
+    <ResponseField name="prompt" type="string">
+      Original prompt used for generation
+    </ResponseField>
+    <ResponseField name="message" type="null">
+      Always `null` for successful generations
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Failed">
+    Sent when image generation fails with specific error codes.
+    
+    ```json
+    {
+      "task_uuid": "dc62d83d-1953-4bca-8554-222679a7a4a9",
+      "status": "failed",
+      "prompt": "cat and dog",
+      "result_image_url": null,
+      "message": "OPENAI_DECLINED"
+    }
+    ```
+    
+    <ResponseField name="status" type="string">
+      Always `"failed"` for failed generations
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Machine-readable error code (see [Error Codes](/api-reference/chatgpt-images/errors))
+    </ResponseField>
+    <ResponseField name="result_image_url" type="null">
+      Always `null` for failed tasks
+    </ResponseField>
+  </Tab>
+</Tabs>
+
+## Reliability Features
+
+<AccordionGroup>
+  <Accordion icon="repeat" title="Automatic Retries">
+    **Retry Policy:** Up to 5 attempts with 30-second intervals
+    
+    **Backoff Strategy:** Linear backoff between retries
+    
+    **Failure Handling:** After 5 failed attempts, the webhook is marked as failed
+  </Accordion>
+  
+  <Accordion icon="clock" title="Timeout Handling">
+    **Request Timeout:** 30 seconds per webhook request
+    
+    **Connection Timeout:** 10 seconds to establish connection
+    
+    **Best Practice:** Respond quickly with a 200 status code
+  </Accordion>
+  
+  <Accordion icon="shield-check" title="Security">
+    **HTTPS Required:** All webhook URLs must use HTTPS
+    
+    **IP Allowlist:** Consider restricting access to RunBlob's IP ranges
+    
+    **Validation:** Always validate the task_uuid in your webhook handler
+  </Accordion>
+</AccordionGroup>
+
+## Example Implementations
+
+<CodeGroup>
+
+```python Flask
+from flask import Flask, request, jsonify
+import logging
+
+app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+
+@app.route('/webhook/chatgpt-images', methods=['POST'])
+def chatgpt_images_webhook():
+    try:
+        data = request.json
+        task_uuid = data.get('task_uuid')
+        status = data.get('status')
+        
+        if status == 'completed':
+            image_url = data.get('result_image_url')
+            logging.info(f"Image ready for {task_uuid}: {image_url}")
+            # Process successful generation
+            process_image(task_uuid, image_url)
+        else:
+            error_code = data.get('message')
+            logging.error(f"Generation failed for {task_uuid}: {error_code}")
+            # Handle failure
+            handle_failure(task_uuid, error_code)
+        
+        return jsonify({'status': 'received'}), 200
+    except Exception as e:
+        logging.error(f"Webhook error: {str(e)}")
+        return jsonify({'error': 'Internal error'}), 500
+
+def process_image(task_uuid, image_url):
+    # Your image processing logic here
+    pass
+
+def handle_failure(task_uuid, error_code):
+    # Your error handling logic here
+    pass
+```
+
+```javascript Express.js
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/webhook/chatgpt-images', (req, res) => {
+  try {
+    const { status, task_uuid, result_image_url, message } = req.body;
+    
+    if (status === 'completed') {
+      console.log(`Image ready for ${task_uuid}: ${result_image_url}`);
+      // Process successful generation
+      processImage(task_uuid, result_image_url);
+    } else {
+      console.error(`Generation failed for ${task_uuid}: ${message}`);
+      // Handle failure
+      handleFailure(task_uuid, message);
+    }
+    
+    res.status(200).json({ status: 'received' });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+function processImage(taskUuid, imageUrl) {
+  // Your image processing logic here
+}
+
+function handleFailure(taskUuid, errorCode) {
+  // Your error handling logic here
+}
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});
+```
+
+</CodeGroup>
+
+<Warning>
+  **Important:** Always return a 200 status code quickly to acknowledge receipt. Perform heavy processing asynchronously to avoid timeouts.
+</Warning>
+
