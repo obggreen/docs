@@ -16,9 +16,7 @@ Creates a video generation task from text description or images using Kling O1 V
 </ParamField>
 
 <ParamField path="duration" type="string" required>
-  Video duration in seconds
-  - **Text-to-video:** `"5"` or `"10"`
-  - **Image-to-video:** `"3"`, `"4"`, `"5"`, `"6"`, `"7"`, `"8"`, `"9"`, `"10"`
+  Video duration in seconds: `"5"` or `"10"`
 </ParamField>
 
 <ParamField path="aspect_ratio" type="string" required>
@@ -42,7 +40,7 @@ Creates a video generation task from text description or images using Kling O1 V
 </ParamField>
 
 <Warning>
-  Provide either `images_base64` OR `images_urls`, not both. Duration options `"3"`, `"4"`, `"6"`, `"7"`, `"8"`, `"9"` are only available for image-to-video.
+  Provide either `images_base64` OR `images_urls`, not both.
 </Warning>
 
 <CodeGroup>
@@ -112,7 +110,7 @@ response = requests.post(
             "https://example.com/photo1.jpg",
             "https://example.com/photo2.jpg"
         ],
-        "duration": "8",
+        "duration": "10",
         "aspect_ratio": "16:9"
     }
 )
@@ -169,7 +167,7 @@ Generate video from text prompt only (no images).
 ### 2. Image-to-Video
 Animate up to 5 images with text prompt.
 
-- **Duration:** `"3"`, `"4"`, `"5"`, `"6"`, `"7"`, `"8"`, `"9"`, `"10"` seconds
+- **Duration:** `"5"` or `"10"` seconds
 - Formats: JPEG, PNG, WEBP
 - Max size: 10 MB per image
 - Max images: 5
@@ -181,7 +179,7 @@ Animate up to 5 images with text prompt.
     "https://example.com/photo1.jpg",
     "https://example.com/photo2.jpg"
   ],
-  "duration": "8",
+  "duration": "10",
   "aspect_ratio": "16:9"
 }
 ```
@@ -204,12 +202,9 @@ Animate up to 5 images with text prompt.
   </Accordion>
   
   <Accordion icon="clock" title="Duration Options">
-    **Text-to-video:**
+    **Available durations:**
     - 5 seconds
     - 10 seconds
-    
-    **Image-to-video:**
-    - 3, 4, 5, 6, 7, 8, 9, or 10 seconds
   </Accordion>
 </AccordionGroup>
 
@@ -226,7 +221,7 @@ Animate up to 5 images with text prompt.
 **400 Bad Request:**
 ```json
 {
-  "detail": "Duration 3 seconds is only available for image-to-video generation"
+  "detail": "Invalid duration. Only 5 or 10 seconds are supported"
 }
 ```
 
@@ -243,4 +238,6 @@ Animate up to 5 images with text prompt.
   "detail": "Maximum 5 images allowed"
 }
 ```
+
+
 

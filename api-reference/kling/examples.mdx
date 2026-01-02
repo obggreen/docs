@@ -28,6 +28,26 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
   }'
 ```
 
+### Motion Control (NEW)
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/generate -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{
+  "prompt": "Make the person speak emotionally",
+  "model": "kling_2.6_motion",
+  "reference_video_url": "https://example.com/motion.mp4",
+  "reference_image_url": "https://example.com/scene.jpg"
+}'
+```
+
+### Motion Control Pro
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/generate -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{
+  "prompt": "High quality motion transfer with smooth transitions",
+  "model": "kling_2.6_motion_pro",
+  "reference_video_url": "https://example.com/reference.mp4",
+  "reference_image_url": "https://example.com/target.jpg"
+}'
+```
+
 ### O1 Photo Generation
 ```bash
 curl -X POST https://platform.runblob.io/v1/kling/o1-photo/generate \
@@ -174,6 +194,17 @@ result = client.generate(
     model="kling_2.6",
     duration="10"
 )
+video_url = client.wait_for_completion(result["generation_id"])
+
+# Motion Control
+result = client.generate(
+    "Transfer the motion from reference video",
+    model="kling_2.6_motion",
+    reference_video_url="https://example.com/motion.mp4",
+    reference_image_url="https://example.com/image.jpg"
+)
+print(f"Generation ID: {result['generation_id']}")
+print(f"Price: ${result['price']}")
 video_url = client.wait_for_completion(result["generation_id"])
 ```
 
@@ -438,6 +469,20 @@ client.generate({
   duration: '10'
 })
   .then(result => client.waitForCompletion(result.generation_id))
+  .then(videoUrl => console.log('Video ready:', videoUrl));
+
+// Motion Control
+client.generate({
+  prompt: 'Transfer the motion from reference video',
+  model: 'kling_2.6_motion',
+  reference_video_url: 'https://example.com/motion.mp4',
+  reference_image_url: 'https://example.com/image.jpg'
+})
+  .then(result => {
+    console.log('Generation ID:', result.generation_id);
+    console.log('Price:', result.price);
+    return client.waitForCompletion(result.generation_id);
+  })
   .then(videoUrl => console.log('Video ready:', videoUrl));
 ```
 

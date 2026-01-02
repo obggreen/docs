@@ -23,6 +23,8 @@ Creates a video generation task from text description using Kling AI models.
   Model to use.
   
   **Available models:**
+  - `kling_2.6_motion` (NEW: Motion Control Standard)
+  - `kling_2.6_motion_pro` (NEW: Motion Control Pro, 2x price)
   - `kling_2.6` (NEW: Audio-enabled, always Pro quality)
   - `kling_2.5_turbo` (Standard/Turbo)
   - `kling_2.5_turbo_pro` (Professional/Turbo Pro)
@@ -64,6 +66,32 @@ Creates a video generation task from text description using Kling AI models.
 <ParamField path="image_url" type="string">
   URL of image for Image-to-Video
 </ParamField>
+
+<ParamField path="reference_video_base64" type="string">
+  Base64-encoded reference video for Motion Control (MP4/MOV/WEBP)
+  
+  **Requirements:**
+  - Duration: 3-30 seconds
+</ParamField>
+
+<ParamField path="reference_video_url" type="string">
+  URL of reference video for Motion Control
+</ParamField>
+
+<ParamField path="reference_image_base64" type="string">
+  Base64-encoded reference image for Motion Control (JPEG/PNG/WEBP)
+</ParamField>
+
+<ParamField path="reference_image_url" type="string">
+  URL of reference image for Motion Control
+</ParamField>
+
+<Warning>
+  **Motion Control requirements:**
+  - Both `reference_video` AND `reference_image` are required
+  - Video duration must be between 3 and 30 seconds
+  - Cannot use both `_base64` and `_url` for the same media type
+</Warning>
 
 <CodeGroup>
 
@@ -130,6 +158,43 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
   }'
 ```
 
+```bash Motion Control (Base64)
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Make the person speak emotionally",
+    "model": "kling_2.6_motion",
+    "reference_video_base64": "data:video/mp4;base64,AAAAHGZ0eXBpc29t...",
+    "reference_image_base64": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
+  }'
+```
+
+```bash Motion Control (URLs)
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Apply this motion to the scene",
+    "model": "kling_2.6_motion",
+    "reference_video_url": "https://example.com/motion.mp4",
+    "reference_image_url": "https://example.com/scene.jpg",
+    "callback_url": "https://your-app.com/webhooks/kling"
+  }'
+```
+
+```bash Motion Control Pro
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "High quality motion transfer with smooth transitions",
+    "model": "kling_2.6_motion_pro",
+    "reference_video_url": "https://example.com/reference.mp4",
+    "reference_image_url": "https://example.com/target.jpg"
+  }'
+```
+
 ```python Python
 import requests
 
@@ -160,12 +225,31 @@ response = requests.post(
         "duration": "10"
     }
 )
+
+# Motion Control
+response = requests.post(
+    "https://platform.runblob.io/v1/kling/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "Transfer the motion from reference video",
+        "model": "kling_2.6_motion",
+        "reference_video_url": "https://example.com/motion.mp4",
+        "reference_image_url": "https://example.com/image.jpg"
+    }
+)
+result = response.json()
+print(f"Generation ID: {result['generation_id']}")
+print(f"Price: ${result['price']}")
 ```
 
 </CodeGroup>
 
 ### Response
 
+**Standard/Pro Models:**
 ```json
 {
   "generation_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -174,8 +258,17 @@ response = requests.post(
 }
 ```
 
+**Motion Control:**
+```json
+{
+  "generation_id": "80844def-c17a-4381-9c07-036cb8c5f045",
+  "status": "pending",
+  "price": "0.3936"
+}
+```
+
 <Note>
-  Video generation typically takes 2-5 minutes. Use the `generation_id` to check status or set up webhooks for notifications.
+  Video generation typically takes 2-5 minutes. Motion Control generation takes 3-6 minutes. Use the `generation_id` to check status or set up webhooks for notifications.
 </Note>
 
 ### Get Generation Status Response
@@ -192,7 +285,7 @@ response = requests.post(
 
 ## Generation Modes
 
-The API supports **2 generation modes**:
+The API supports **3 generation modes**:
 
 ### 1. Text-to-Video
 Generate video from text prompt only (no images).
@@ -214,7 +307,44 @@ Animate a single image with text prompt using `image_base64` or `image_url` para
   **Important:** You cannot use both `image_base64` and `image_url` in the same request. For image-to-video mode, aspect ratio is taken from the input image automatically.
 </Info>
 
+### 3. Motion Control
+Transfer motion and style from a reference video to a reference image.
+
+- **Required:** Both `reference_video` AND `reference_image`
+- **Video duration:** 3-30 seconds
+- **Video formats:** MP4, MOV, WEBM
+- **Image formats:** JPEG, PNG, WEBP
+- **Models:** `kling_2.6_motion`, `kling_2.6_motion_pro`
+- **Pricing:** Per second (rounded up)
+  - Standard: $0.041/sec
+  - Pro: $0.082/sec (2x price)
+- **Aspect ratio & duration:** Auto-detected from reference video
+
+```json
+{
+  "prompt": "Apply this motion to the scene",
+  "model": "kling_2.6_motion",
+  "reference_video_url": "https://example.com/motion.mp4",
+  "reference_image_url": "https://example.com/scene.jpg"
+}
+```
+
+
 ## Models Guide
+
+### Kling 2.6 Motion Control (NEW)
+- **Codes:** `kling_2.6_motion`, `kling_2.6_motion_pro`
+- **Features:**
+  - Motion transfer from reference video
+  - Requires reference video (3-30s) + reference image
+  - Aspect ratio: Auto-detected from video
+  - Duration: Auto-detected from video
+  - Negative prompt: No
+  - CFG Scale: No
+- **Pricing:**
+  - Standard: $0.041/sec
+  - Pro: $0.082/sec (2x price)
+- **Best for:** Transferring motion and style from reference videos
 
 ### Kling 2.6 (NEW)
 - **Code:** `kling_2.6`

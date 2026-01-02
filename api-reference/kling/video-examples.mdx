@@ -23,7 +23,7 @@ curl -X POST https://platform.runblob.io/v1/kling/o1-video/generate -H "Authoriz
     "https://example.com/photo2.jpg",
     "https://example.com/photo3.jpg"
   ],
-  "duration": "8",
+  "duration": "10",
   "aspect_ratio": "16:9"
 }'
 ```
@@ -112,7 +112,7 @@ result = client.generate_from_images(
         "https://example.com/photo1.jpg",
         "https://example.com/photo2.jpg"
     ],
-    duration="8",
+    duration="10",
     aspect_ratio="16:9"
 )
 video_url = client.wait_for_completion(result["generation_id"])
@@ -255,7 +255,7 @@ response = requests.post(
     json={
         "prompt": "Bring these photos to life with smooth animation",
         "images_base64": images,
-        "duration": "8",
+        "duration": "10",
         "aspect_ratio": "16:9"
     }
 )
@@ -355,7 +355,7 @@ client.generate({
     'https://example.com/photo1.jpg',
     'https://example.com/photo2.jpg'
   ],
-  duration: '8',
+  duration: '10',
   aspect_ratio: '16:9'
 })
   .then(result => client.waitForCompletion(result.generation_id))
@@ -526,4 +526,6 @@ async function safeGenerate(request) {
   }
 }
 ```
+
+
 
