@@ -15,6 +15,12 @@ Creates an image generation task from text description using ChatGPT Image 1.5 m
   Text description of the image (1-4000 characters)
 </ParamField>
 
+<ParamField path="aspect_ratio" type="string">
+  Image aspect ratio. Options: `1:1` (square), `4:3` (landscape), `3:4` (portrait)
+  
+  **Optional** — if not provided, model automatically chooses the best ratio for your prompt.
+</ParamField>
+
 <ParamField path="images" type="array">
   Array of up to 4 images for reference-based generation. Each element can be:
   - HTTP/HTTPS URL (e.g., `"https://example.com/image.jpg"`)
@@ -27,14 +33,21 @@ Creates an image generation task from text description using ChatGPT Image 1.5 m
 </ParamField>
 
 <Info>
-  **Image formats:** Images can be provided as URLs or Base64. Base64 images without prefix are decoded as JPEG by default.
+  **Aspect Ratio:** Optional parameter. If omitted, model automatically selects the best ratio for your prompt.
 </Info>
 
 <CodeGroup>
 
-```bash Simple Generation
+```bash Simple Generation (Auto Ratio)
 curl -X POST https://platform.runblob.io/v1/chatgpt-images/generate -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{
   "prompt": "A futuristic city with flying cars, neon lights, cyberpunk style"
+}'
+```
+
+```bash With Aspect Ratio
+curl -X POST https://platform.runblob.io/v1/chatgpt-images/generate -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{
+  "prompt": "A beautiful landscape with mountains",
+  "aspect_ratio": "4:3"
 }'
 ```
 
@@ -63,7 +76,7 @@ curl -X POST https://platform.runblob.io/v1/chatgpt-images/generate -H "Authoriz
 ```python Python
 import requests
 
-# Simple generation
+# Auto aspect ratio (omit parameter)
 response = requests.post(
     "https://platform.runblob.io/v1/chatgpt-images/generate",
     headers={
@@ -75,7 +88,7 @@ response = requests.post(
     }
 )
 
-# With reference images
+# With specific aspect ratio
 response = requests.post(
     "https://platform.runblob.io/v1/chatgpt-images/generate",
     headers={
@@ -84,6 +97,7 @@ response = requests.post(
     },
     json={
         "prompt": "Combine these images into a beautiful scene",
+        "aspect_ratio": "4:3",
         "images": [
             "https://example.com/ref1.jpg",
             "https://example.com/ref2.jpg"

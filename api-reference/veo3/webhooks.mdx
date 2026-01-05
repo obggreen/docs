@@ -25,7 +25,8 @@ description: "Real-time notifications for video generation events"
         if data['status'] == 'completed':
             print(f"Video ready: {data['video_url']}")
         else:
-            print(f"Generation failed: {data['message']}")
+            error_msg = data.get('error', {}).get('message', 'Unknown error')
+            print(f"Generation failed: {error_msg}")
             
         return jsonify({'status': 'received'}), 200
     ```
@@ -107,15 +108,18 @@ description: "Real-time notifications for video generation events"
       "created_at": "2025-12-06T21:43:03.374000",
       "completed_at": "2025-12-06T21:44:06.143000",
       "seed": 319790131,
-      "error": "UNSAFE_CONTENT"
+      "error": {
+        "message": "UNSAFE_CONTENT",
+        "details": {}
+      }
     }
     ```
     
     <ResponseField name="status" type="string">
       Always `"failed"` for failed generations
     </ResponseField>
-    <ResponseField name="error" type="string">
-      Machine-readable error code (see [Error Codes](/api-reference/veo3/errors))
+    <ResponseField name="error" type="object">
+      Error details with `message` (error code) and `details` fields (see [Error Codes](/api-reference/veo3/errors))
     </ResponseField>
     <ResponseField name="video_url" type="null">
       Always `null` for failed tasks
@@ -134,7 +138,10 @@ description: "Real-time notifications for video generation events"
       "created_at": "2025-12-06T21:43:03.374000",
       "completed_at": "2025-12-06T21:44:06.143000",
       "seed": 319790131,
-      "error": "TIMEOUT"
+      "error": {
+        "message": "TIMEOUT",
+        "details": {}
+      }
     }
     ```
     
@@ -196,7 +203,8 @@ def runblob_webhook():
             # Process successful generation
             process_video(generation_id, video_url)
         else:
-            error_code = data.get('message')
+            error = data.get('error', {})
+            error_code = error.get('message', 'Unknown error')
             logging.error(f"Generation failed for {generation_id}: {error_code}")
             # Handle failure
             handle_failure(generation_id, error_code)
@@ -223,16 +231,17 @@ app.use(express.json());
 
 app.post('/webhook', (req, res) => {
   try {
-    const { status, generation_id, video_url, message } = req.body;
+    const { status, generation_id, video_url, error } = req.body;
     
     if (status === 'completed') {
       console.log(`Video ready for ${generation_id}: ${video_url}`);
       // Process successful generation
       processVideo(generation_id, video_url);
     } else {
-      console.error(`Generation failed for ${generation_id}: ${message}`);
+      const errorCode = error?.message || 'Unknown error';
+      console.error(`Generation failed for ${generation_id}: ${errorCode}`);
       // Handle failure
-      handleFailure(generation_id, message);
+      handleFailure(generation_id, errorCode);
     }
     
     res.status(200).json({ status: 'received' });

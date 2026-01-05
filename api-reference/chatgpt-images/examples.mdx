@@ -5,10 +5,18 @@ description: "Ready-to-use code snippets for ChatGPT Image 1.5 integration"
 
 ## cURL
 
-### Simple Generation
+### Simple Generation (Auto Aspect Ratio)
 ```bash
 curl -X POST https://platform.runblob.io/v1/chatgpt-images/generate -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{
   "prompt": "A futuristic city with flying cars, neon lights, cyberpunk style"
+}'
+```
+
+### With Custom Aspect Ratio
+```bash
+curl -X POST https://platform.runblob.io/v1/chatgpt-images/generate -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{
+  "prompt": "A beautiful portrait in studio lighting",
+  "aspect_ratio": "3:4"
 }'
 ```
 
@@ -16,6 +24,7 @@ curl -X POST https://platform.runblob.io/v1/chatgpt-images/generate -H "Authoriz
 ```bash
 curl -X POST https://platform.runblob.io/v1/chatgpt-images/generate -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{
   "prompt": "Combine these images into a beautiful collage",
+  "aspect_ratio": "4:3",
   "images": [
     "https://example.com/image1.jpg",
     "https://example.com/image2.jpg",
@@ -57,23 +66,32 @@ class ChatGPTImageClient:
             "Content-Type": "application/json"
         }
     
-    def generate(self, prompt, **kwargs):
+    def generate(self, prompt, aspect_ratio=None, **kwargs):
+        payload = {"prompt": prompt}
+        if aspect_ratio:
+            payload["aspect_ratio"] = aspect_ratio
+        payload.update(kwargs)
+        
         response = requests.post(
             f"{self.base_url}/v1/chatgpt-images/generate",
             headers=self.headers,
-            json={"prompt": prompt, **kwargs}
+            json=payload
         )
         return response.json()
     
-    def generate_with_references(self, prompt, images, **kwargs):
+    def generate_with_references(self, prompt, images, aspect_ratio=None, **kwargs):
+        payload = {
+            "prompt": prompt,
+            "images": images
+        }
+        if aspect_ratio:
+            payload["aspect_ratio"] = aspect_ratio
+        payload.update(kwargs)
+        
         response = requests.post(
             f"{self.base_url}/v1/chatgpt-images/generate",
             headers=self.headers,
-            json={
-                "prompt": prompt,
-                "images": images,
-                **kwargs
-            }
+            json=payload
         )
         return response.json()
     
@@ -93,11 +111,15 @@ class ChatGPTImageClient:
                 raise Exception(f"Generation failed: {result.get('message')}")
             time.sleep(poll_interval)
 
-# Simple generation
+# Simple generation (auto aspect ratio)
 client = ChatGPTImageClient("YOUR_API_KEY")
 result = client.generate("A beautiful landscape with mountains")
 image_url = client.wait_for_completion(result["task_uuid"])
 print(f"Image ready: {image_url}")
+
+# With custom aspect ratio
+result = client.generate("A portrait photo", aspect_ratio="3:4")
+image_url = client.wait_for_completion(result["task_uuid"])
 
 # With reference images
 result = client.generate_with_references(
@@ -105,7 +127,8 @@ result = client.generate_with_references(
     images=[
         "https://example.com/ref1.jpg",
         "https://example.com/ref2.jpg"
-    ]
+    ],
+    aspect_ratio="1:1"
 )
 image_url = client.wait_for_completion(result["task_uuid"])
 ```
@@ -126,6 +149,7 @@ class ChatGPTImageAPI:
         }
     
     def generate(self, prompt: str, 
+                 aspect_ratio: Optional[str] = None,
                  images: Optional[List[str]] = None,
                  callback_url: Optional[str] = None) -> dict:
         """Create a new image generation."""
@@ -133,6 +157,11 @@ class ChatGPTImageAPI:
             raise ValueError("Prompt must be 1-4000 characters")
         
         payload = {"prompt": prompt}
+        
+        if aspect_ratio:
+            if aspect_ratio not in ["1:1", "4:3", "3:4"]:
+                raise ValueError("aspect_ratio must be one of: 1:1, 4:3, 3:4")
+            payload["aspect_ratio"] = aspect_ratio
         
         if images:
             if len(images) > 4:
@@ -202,7 +231,7 @@ class ChatGPTImageAPI:
 try:
     client = ChatGPTImageAPI("YOUR_API_KEY")
     
-    # Simple generation
+    # Auto aspect ratio (omit parameter)
     result = client.generate(
         prompt="A futuristic cyberpunk city"
     )
@@ -214,9 +243,10 @@ try:
     image_url = client.wait_for_completion(result['task_uuid'])
     print(f"Image ready: {image_url}")
     
-    # With reference images
+    # With custom aspect ratio
     result = client.generate(
         prompt="Combine these images",
+        aspect_ratio="4:3",
         images=[
             "https://example.com/ref1.jpg",
             "https://example.com/ref2.jpg"
@@ -341,7 +371,8 @@ const client = new ChatGPTImageAPI('YOUR_API_KEY');
 
 // Simple generation
 client.generate({
-  prompt: 'A futuristic cyberpunk city'
+  prompt: 'A futuristic cyberpunk city',
+  aspect_ratio: '4:3'
 })
   .then(result => {
     console.log('Task UUID:', result.task_uuid);
@@ -357,6 +388,7 @@ client.generate({
 // With reference images
 client.generate({
   prompt: 'Combine these images',
+  aspect_ratio: '1:1',
   images: [
     'https://example.com/ref1.jpg',
     'https://example.com/ref2.jpg'
@@ -377,6 +409,7 @@ const response = await fetch('https://platform.runblob.io/v1/chatgpt-images/gene
   },
   body: JSON.stringify({
     prompt: 'A beautiful landscape',
+    aspect_ratio: '4:3',
     images: [
       'https://example.com/ref1.jpg'
     ],
@@ -453,6 +486,7 @@ const handleFileUpload = async (files) => {
     },
     body: JSON.stringify({
       prompt: 'Create a beautiful collage from these photos',
+      aspect_ratio: '1:1',
       images: base64Images
     })
   });
@@ -481,6 +515,11 @@ function validateRequest(data) {
   // Check prompt length
   if (data.prompt.length < 1 || data.prompt.length > 4000) {
     return 'Prompt must be 1-4000 characters';
+  }
+
+  // Check aspect ratio
+  if (data.aspect_ratio && !['1:1', '4:3', '3:4'].includes(data.aspect_ratio)) {
+    return 'aspect_ratio must be one of: 1:1, 4:3, 3:4';
   }
 
   // Check image count

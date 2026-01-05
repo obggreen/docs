@@ -22,7 +22,7 @@ curl -X POST https://platform.runblob.io/v1/veo/generate \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Smooth transformation between two states",
-    "model_type": "veo-3-fast",
+    "model": "veo-3-fast",
     "start_frame": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
     "end_frame": "data:image/jpeg;base64,iVBORw0KGgoAAAANS...",
     "aspect_ratio": "16:9"
@@ -36,7 +36,7 @@ curl -X POST https://platform.runblob.io/v1/veo/generate \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Characters celebrating a birthday",
-    "model_type": "veo-3-fast",
+    "model": "veo-3-fast",
     "reference_images": [
       "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
       "data:image/jpeg;base64,iVBORw0KGgoAAAANS..."
@@ -81,7 +81,7 @@ class VeoClient:
                 "prompt": prompt,
                 "start_frame": start_frame,
                 "end_frame": end_frame,
-                "model_type": "veo-3-fast",
+                "model": "veo-3-fast",
                 **kwargs
             }
         )
@@ -94,7 +94,7 @@ class VeoClient:
             json={
                 "prompt": prompt,
                 "reference_images": reference_images,
-                "model_type": "veo-3-fast",
+                "model": "veo-3-fast",
                 **kwargs
             }
         )
@@ -113,7 +113,9 @@ class VeoClient:
             if result["status"] == "completed":
                 return result["video_url"]
             elif result["status"] == "failed":
-                raise Exception(f"Generation failed: {result['message']}")
+                error = result.get("error", {})
+                error_msg = error.get("message", "Unknown error")
+                raise Exception(f"Generation failed: {error_msg}")
             time.sleep(10)
 
 # Text-to-Video
