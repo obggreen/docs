@@ -1,0 +1,391 @@
+---
+title: "Webhooks"
+description: "Real-time notifications for O3 Video generation events"
+---
+
+<Info>
+  Webhooks provide instant notifications when your video generation tasks complete, fail, or timeout. No more polling!
+</Info>
+
+## Setup Guide
+
+<Steps>
+  <Step title="Create Webhook Endpoint">
+    Set up an HTTPS endpoint that can receive POST requests.
+    
+    ```python
+    from flask import Flask, request, jsonify
+    
+    app = Flask(__name__)
+    
+    @app.route('/webhook/o3-video', methods=['POST'])
+    def handle_webhook():
+        data = request.json
+        
+        if data['status'] == 'completed':
+            print(f"Video ready: {data['video_url']}")
+            # Process the completed video
+        else:
+            print(f"Generation failed: {data['message']}")
+            # Handle the error
+            
+        return jsonify({'status': 'received'}), 200
+    ```
+  </Step>
+  
+  <Step title="Add Webhook URL">
+    Include your webhook URL when creating a generation task.
+    
+    ```bash
+    curl -X POST https://platform.runblob.io/v1/kling/o3-video/generate \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "prompt": "Dragon flying over mountains",
+        "duration": "10",
+        "mode": "pro",
+        "callback_url": "https://your-app.com/webhook/o3-video"
+      }'
+    ```
+  </Step>
+  
+  <Step title="Handle Notifications">
+    Your endpoint will receive instant notifications when tasks complete.
+  </Step>
+</Steps>
+
+## Payload Structure
+
+<Tabs>
+  <Tab title="Success">
+    Sent when video generation completes successfully.
+    
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "completed",
+      "video_url": "https://cdn.example.com/videos/550e8400.mp4",
+      "model": "kling-o3-video-10s-pro",
+      "message": null
+    }
+    ```
+    
+    <ResponseField name="status" type="string">
+      Always `"completed"` for successful generations
+    </ResponseField>
+    <ResponseField name="generation_id" type="string">
+      UUID of the completed task
+    </ResponseField>
+    <ResponseField name="video_url" type="string">
+      Direct download URL for the generated video
+    </ResponseField>
+    <ResponseField name="model" type="string">
+      Model configuration used (e.g., `kling-o3-video-10s-pro`)
+    </ResponseField>
+    <ResponseField name="message" type="null">
+      Always `null` for successful generations
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Failed">
+    Sent when video generation fails with specific error codes.
+    
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "video_url": null,
+      "model": "kling-o3-video-10s-pro",
+      "message": "CONTENT_POLICY_VIOLATION"
+    }
+    ```
+    
+    <ResponseField name="status" type="string">
+      Always `"failed"` for failed generations
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Machine-readable error code (see [Error Codes](/api-reference/kling/o3-video-errors))
+    </ResponseField>
+    <ResponseField name="video_url" type="null">
+      Always `null` for failed tasks
+    </ResponseField>
+  </Tab>
+  
+  <Tab title="Timeout">
+    Sent when generation exceeds the 15-minute limit.
+    
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "video_url": null,
+      "model": "kling-o3-video-10s-pro",
+      "message": "TIMEOUT"
+    }
+    ```
+    
+    <Note>
+      Credits are automatically refunded for timed-out tasks.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Error Codes
+
+Common error codes sent via webhooks:
+
+| Code | Description | Action |
+|------|-------------|--------|
+| `CONTENT_POLICY_VIOLATION` | Content violates usage policies | Modify prompt |
+| `IMAGE_INACCESSIBLE` | Image URL returned 404/403 | Check image URLs |
+| `INVALID_IMAGE` | Image format invalid or corrupted | Use valid JPEG/PNG |
+| `TIMEOUT` | Generation exceeded 15 minutes | Credits refunded |
+| `TASK_FAILED` | General system error | Credits refunded, retry |
+| `MAINTENANCE` | Service temporarily unavailable | Retry later |
+
+<Info>
+  For complete error reference, see [Error Codes](/api-reference/kling/o3-video-errors)
+</Info>
+
+## Reliability Features
+
+<AccordionGroup>
+  <Accordion icon="repeat" title="Automatic Retries">
+    **Retry Policy:** Up to 5 attempts with 30-second intervals
+    
+    **Backoff Strategy:** Linear backoff between retries
+    
+    **Failure Handling:** After 5 failed attempts, the webhook is marked as failed
+  </Accordion>
+  
+  <Accordion icon="clock" title="Timeout Handling">
+    **Request Timeout:** 30 seconds per webhook request
+    
+    **Connection Timeout:** 10 seconds to establish connection
+    
+    **Best Practice:** Respond quickly with a 200 status code, process asynchronously
+  </Accordion>
+  
+  <Accordion icon="shield-check" title="Security">
+    **HTTPS Required:** All webhook URLs must use HTTPS
+    
+    **IP Allowlist:** Consider restricting access to RunBlob's IP ranges
+    
+    **Validation:** Always validate the generation_id in your webhook handler
+  </Accordion>
+</AccordionGroup>
+
+## Example Implementations
+
+<CodeGroup>
+
+```python Flask
+from flask import Flask, request, jsonify
+import logging
+
+app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+
+@app.route('/webhook/o3-video', methods=['POST'])
+def o3_video_webhook():
+    try:
+        data = request.json
+        generation_id = data.get('generation_id')
+        
+        if data.get('status') == 'completed':
+            video_url = data.get('video_url')
+            model = data.get('model')
+            logging.info(f"Video ready for {generation_id}: {video_url} ({model})")
+            
+            # Process successful generation
+            process_video(generation_id, video_url, model)
+        else:
+            error_code = data.get('message')
+            logging.error(f"Generation failed for {generation_id}: {error_code}")
+            
+            # Handle failure
+            handle_failure(generation_id, error_code)
+        
+        return jsonify({'status': 'received'}), 200
+    except Exception as e:
+        logging.error(f"Webhook error: {str(e)}")
+        return jsonify({'error': 'Internal error'}), 500
+
+def process_video(generation_id, video_url, model):
+    """Process completed video - download, store, notify user"""
+    # Download video to your storage
+    # Update database
+    # Notify user via email/push notification
+    pass
+
+def handle_failure(generation_id, error_code):
+    """Handle failed generation - log, refund, notify"""
+    # Log error for analytics
+    # Update database with failure reason
+    # Notify user of failure
+    pass
+
+if __name__ == '__main__':
+    app.run(port=3000)
+```
+
+```javascript Express.js
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/webhook/o3-video', async (req, res) => {
+  try {
+    const { status, generation_id, video_url, model, message } = req.body;
+    
+    if (status === 'completed') {
+      console.log(`✅ Video ready for ${generation_id}: ${video_url} (${model})`);
+      
+      // Process successful generation
+      await processVideo(generation_id, video_url, model);
+    } else {
+      console.error(`❌ Generation failed for ${generation_id}: ${message}`);
+      
+      // Handle failure
+      await handleFailure(generation_id, message);
+    }
+    
+    res.status(200).json({ status: 'received' });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+async function processVideo(generationId, videoUrl, model) {
+  // Download video to your storage
+  // Update database
+  // Notify user via WebSocket/SSE
+}
+
+async function handleFailure(generationId, errorCode) {
+  // Log error for analytics
+  // Update database with failure reason
+  // Notify user of failure
+}
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});
+```
+
+```typescript TypeScript + Next.js
+import { NextApiRequest, NextApiResponse } from 'next';
+
+interface WebhookPayload {
+  generation_id: string;
+  status: 'completed' | 'failed';
+  video_url: string | null;
+  model: string;
+  message: string | null;
+}
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const payload: WebhookPayload = req.body;
+    
+    if (payload.status === 'completed') {
+      console.log(`✅ Video ready: ${payload.video_url}`);
+      
+      // Process the completed video
+      await processVideo(payload);
+    } else {
+      console.error(`❌ Generation failed: ${payload.message}`);
+      
+      // Handle failure
+      await handleFailure(payload);
+    }
+    
+    return res.status(200).json({ status: 'received' });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return res.status(500).json({ error: 'Internal error' });
+  }
+}
+
+async function processVideo(payload: WebhookPayload) {
+  // Download and store video
+  // Update database
+  // Notify user
+}
+
+async function handleFailure(payload: WebhookPayload) {
+  // Log error
+  // Update database
+  // Notify user
+}
+```
+
+</CodeGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion icon="bolt" title="Respond Quickly">
+    Always return `200 OK` immediately. Process the webhook payload asynchronously:
+    
+    ```javascript
+    app.post('/webhook', async (req, res) => {
+      // Acknowledge receipt immediately
+      res.status(200).json({ status: 'received' });
+      
+      // Process asynchronously
+      processWebhookAsync(req.body).catch(console.error);
+    });
+    ```
+  </Accordion>
+  
+  <Accordion icon="database" title="Store Generation IDs">
+    Keep track of generation IDs in your database to prevent duplicate processing:
+    
+    ```python
+    def handle_webhook(data):
+        generation_id = data['generation_id']
+        
+        # Check if already processed
+        if db.is_processed(generation_id):
+            return  # Skip duplicate
+        
+        # Mark as processed
+        db.mark_processed(generation_id)
+        
+        # Process the video
+        process_video(data)
+    ```
+  </Accordion>
+  
+  <Accordion icon="shield" title="Validate Payloads">
+    Always validate webhook payloads before processing:
+    
+    ```javascript
+    function validateWebhook(payload) {
+      if (!payload.generation_id || !payload.status) {
+        throw new Error('Invalid webhook payload');
+      }
+      
+      if (payload.status === 'completed' && !payload.video_url) {
+        throw new Error('Missing video_url for completed generation');
+      }
+      
+      return true;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  **Important:** Always return a 200 status code quickly to acknowledge receipt. Perform heavy processing asynchronously to avoid timeouts.
+</Warning>

@@ -1,0 +1,164 @@
+---
+title: "Check Status"
+description: "Check the status of your O3 Photo generation"
+---
+
+<Info>
+  **Base URL:** `https://platform.runblob.io`
+</Info>
+
+## GET /v1/kling/o3-photo/generations/{generation_id}
+
+Retrieve the current status and result of an image generation task.
+
+<ParamField path="generation_id" type="string" required>
+  The unique identifier returned from the generate request
+</ParamField>
+
+<Accordion title="Status Values" icon="list">
+  - **`pending`** - Task created, waiting in queue
+  - **`processing`** - Image is being generated
+  - **`completed`** - Generation finished, image ready
+  - **`failed`** - Generation failed (see webhook for error details)
+</Accordion>
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://platform.runblob.io/v1/kling/o3-photo/generations/550e8400-e29b-41d4-a716-446655440000 -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://platform.runblob.io/v1/kling/o3-photo/generations/550e8400-e29b-41d4-a716-446655440000",
+    headers={"Authorization": "Bearer YOUR_API_KEY"}
+)
+
+data = response.json()
+print(f"Status: {data['status']}")
+if data['status'] == 'completed':
+    print(f"Image URL: {data['image_url']}")
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://platform.runblob.io/v1/kling/o3-photo/generations/550e8400-e29b-41d4-a716-446655440000',
+  {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY'
+    }
+  }
+);
+
+const data = await response.json();
+console.log('Status:', data.status);
+if (data.status === 'completed') {
+  console.log('Image URL:', data.image_url);
+}
+```
+
+</CodeGroup>
+
+## Response Examples
+
+<Tabs>
+  <Tab title="Pending/Processing">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "processing",
+      "prompt": "A futuristic city with flying cars",
+      "image_url": null,
+      "model": "kling_o3_photo"
+    }
+    ```
+    
+    <Note>
+      Keep polling this endpoint every 3-5 seconds until status changes to `completed` or `failed`.
+      
+      **Expected timeline:**
+      - `pending` → `processing`: 10-30 seconds
+      - `processing` → `completed`: 1-3 minutes
+    </Note>
+  </Tab>
+  
+  <Tab title="Completed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "completed",
+      "prompt": "A futuristic city with flying cars",
+      "image_url": "https://cdn.example.com/images/550e8400.png",
+      "model": "kling_o3_photo"
+    }
+    ```
+    
+    <Note>
+      The `image_url` is a direct link to the generated image. Download and save it to your storage as CDN links may expire after 24 hours.
+    </Note>
+  </Tab>
+  
+  <Tab title="Failed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "prompt": "A futuristic city with flying cars",
+      "image_url": null,
+      "model": "kling_o3_photo"
+    }
+    ```
+    
+    <Warning>
+      For detailed error information, check your [webhook payload](/api-reference/kling/o3-photo-webhooks) if configured, or refer to [error codes](/api-reference/kling/o3-photo-errors).
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Response Fields
+
+<ResponseField name="generation_id" type="string">
+  Unique identifier for this generation
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current status: `pending`, `processing`, `completed`, or `failed`
+</ResponseField>
+
+<ResponseField name="prompt" type="string">
+  The original text prompt used for generation
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  Direct URL to the generated image (only available when status is `completed`)
+</ResponseField>
+
+<ResponseField name="model" type="string">
+  Model identifier: `kling_o3_photo`
+</ResponseField>
+
+## Polling Best Practices
+
+<Steps>
+  <Step title="Start Polling After Generation">
+    Wait 5-10 seconds before your first status check to give the system time to queue the task
+  </Step>
+  
+  <Step title="Use Appropriate Intervals">
+    Poll every 3-5 seconds. Faster polling won't speed up generation and may hit rate limits
+  </Step>
+  
+  <Step title="Set a Timeout">
+    Stop polling after 5 minutes. If still not completed, assume failure and check error logs
+  </Step>
+  
+  <Step title="Use Webhooks for Production">
+    For production apps, use [webhooks](/api-reference/kling/o3-photo-webhooks) instead of polling to reduce latency and API calls
+  </Step>
+</Steps>
+
+<Warning>
+  **Rate Limits:** Maximum 60 status checks per minute per API key. Use webhooks to avoid hitting this limit.
+</Warning>

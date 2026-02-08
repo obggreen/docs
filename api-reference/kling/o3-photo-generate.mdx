@@ -1,0 +1,237 @@
+---
+title: "Generate Image"
+description: "Create images from text prompts using Kling O3 Photo"
+---
+
+<Info>
+  **Base URL:** `https://platform.runblob.io`
+</Info>
+
+## POST /v1/kling/o3-photo/generate
+
+Creates an image generation task from text description using Kling O3 Photo model.
+
+<ParamField path="prompt" type="string" required>
+  Text description of the image (1-2500 characters)
+</ParamField>
+
+<ParamField path="images_url" type="array">
+  Array of image URLs for reference-based generation (max 10 images, cannot mix with `images_base64`)
+</ParamField>
+
+<ParamField path="images_base64" type="array">
+  Array of base64-encoded images for reference-based generation (max 10 images, cannot mix with `images_url`)
+</ParamField>
+
+<ParamField path="img_resolution" type="string" default="4k">
+  Image resolution: `"1k"`, `"2k"`, or `"4k"`
+</ParamField>
+
+<ParamField path="aspect_ratio" type="string" default="1:1">
+  Image aspect ratio. Available options:
+  - `"1:1"` - Square (default)
+  - `"auto"` - Automatic detection
+  - `"9:16"` - Vertical portrait
+  - `"2:3"` - Vertical
+  - `"3:4"` - Vertical
+  - `"4:3"` - Horizontal
+  - `"3:2"` - Horizontal
+  - `"16:9"` - Widescreen
+  - `"21:9"` - Ultra-wide
+</ParamField>
+
+<ParamField path="prefer_multi_shots" type="boolean" default="false">
+  Generate multiple variations in a single image (experimental feature)
+</ParamField>
+
+<ParamField path="callback_url" type="string">
+  Webhook URL for completion notifications
+</ParamField>
+
+<Warning>
+  **Image Input Restrictions:**
+  - Provide either `images_url` OR `images_base64`, not both
+  - Maximum 10 images total (URLs + base64 combined)
+  - Maximum 10 MB per image
+  - Supported formats: JPEG, PNG, WEBP
+</Warning>
+
+<CodeGroup>
+
+```bash Simple Generation
+curl -X POST https://platform.runblob.io/v1/kling/o3-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A futuristic city with flying cars, neon lights, cyberpunk style",
+    "img_resolution": "4k",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+```bash With Reference Images (URLs)
+curl -X POST https://platform.runblob.io/v1/kling/o3-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Combine these images into a beautiful collage with a sunset theme",
+    "images_url": [
+      "https://your-storage.com/image1.jpg",
+      "https://your-storage.com/image2.jpg"
+    ],
+    "img_resolution": "2k",
+    "aspect_ratio": "auto",
+    "callback_url": "https://your-app.com/webhooks/o3-photo"
+  }'
+```
+
+```bash With Multi-Shots
+curl -X POST https://platform.runblob.io/v1/kling/o3-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Character design sheet: a futuristic warrior",
+    "img_resolution": "4k",
+    "aspect_ratio": "16:9",
+    "prefer_multi_shots": true
+  }'
+```
+
+```python Python
+import requests
+
+# Simple generation
+response = requests.post(
+    "https://platform.runblob.io/v1/kling/o3-photo/generate",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "prompt": "A futuristic city with flying cars, neon lights",
+        "img_resolution": "4k",
+        "aspect_ratio": "16:9"
+    }
+)
+
+data = response.json()
+print(f"Generation ID: {data['generation_id']}")
+print(f"Price: ${data['price']}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://platform.runblob.io/v1/kling/o3-photo/generate', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    prompt: "A futuristic city with flying cars, neon lights",
+    img_resolution: "4k",
+    aspect_ratio: "16:9"
+  })
+});
+
+const data = await response.json();
+console.log('Generation ID:', data.generation_id);
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "pending",
+  "price": "0.0500"
+}
+```
+
+<ResponseField name="generation_id" type="string">
+  UUID of the generation task for status checking
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Initial status, always `"pending"`
+</ResponseField>
+
+<ResponseField name="price" type="string">
+  Amount charged in USD (varies by resolution)
+</ResponseField>
+
+<Note>
+  Image generation typically takes 1-3 minutes. Use the `generation_id` to [check status](/api-reference/kling/o3-photo-status) or set up [webhooks](/api-reference/kling/o3-photo-webhooks) for notifications.
+  
+  **Check status:** `GET /v1/kling/o3-photo/generations/{generation_id}`
+</Note>
+
+## Generation Features
+
+<AccordionGroup>
+  <Accordion icon="images" title="Reference Images">
+    **Use input images for reference-based generation:**
+    - `images_url`: Provide URLs of reference images (HTTPS)
+    - `images_base64`: Provide base64-encoded images
+    - **Maximum 10 images total** (URLs + base64 combined)
+    - **Cannot mix** `images_url` and `images_base64` in one request
+    - Supports JPEG, PNG, WEBP formats
+    - Maximum 10 MB per image
+    - AI will use them as visual reference for generation
+  </Accordion>
+  
+  <Accordion icon="expand" title="Resolution Options">
+    **Choose image quality:**
+    - **1K:** Faster generation, standard quality
+    - **2K:** Higher detail, recommended for most use cases
+    - **4K:** Ultra high-definition, best for professional work (default)
+  </Accordion>
+  
+  <Accordion icon="crop" title="Aspect Ratios">
+    **9 aspect ratio options:**
+    - **1:1:** Square (default)
+    - **Auto:** Automatically determine best ratio
+    - Portrait formats: 9:16, 2:3, 3:4
+    - Landscape formats: 4:3, 3:2, 16:9, 21:9
+  </Accordion>
+  
+  <Accordion icon="grid" title="Multi-Shots (Experimental)">
+    **Generate multiple variations in one image:**
+    - Set `prefer_multi_shots: true`
+    - Creates character sheets, design variations, or multiple angles
+    - Best with prompts like "character design sheet", "product from different angles"
+    - Works best with 16:9 or 21:9 aspect ratios
+  </Accordion>
+</AccordionGroup>
+
+## Error Responses
+
+<Tabs>
+  <Tab title="400 Bad Request">
+    ```json
+    {
+      "detail": "Prompt must be between 1 and 2500 characters"
+    }
+    ```
+    Invalid request parameters
+  </Tab>
+  
+  <Tab title="402 Payment Required">
+    ```json
+    {
+      "detail": "INSUFFICIENT_CREDITS"
+    }
+    ```
+    Not enough credits in your account
+  </Tab>
+  
+  <Tab title="422 Unprocessable Entity">
+    ```json
+    {
+      "detail": "Invalid image format. Supported: JPEG, PNG, WEBP"
+    }
+    ```
+    Invalid input data
+  </Tab>
+</Tabs>

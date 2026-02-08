@@ -1,0 +1,475 @@
+---
+title: "Code Examples"
+description: "Ready-to-use code snippets for Kling O3 Photo integration"
+---
+
+## cURL
+
+### Simple Generation
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/o3-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A futuristic city with flying cars, neon lights, cyberpunk style",
+    "img_resolution": "4k",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+### With Reference Images (URLs)
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/o3-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Combine these images into a beautiful collage with a sunset theme",
+    "images_url": [
+      "https://your-storage.com/image1.jpg",
+      "https://your-storage.com/image2.jpg"
+    ],
+    "img_resolution": "2k",
+    "aspect_ratio": "auto"
+  }'
+```
+
+### With Multi-Shots
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/o3-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Character design sheet: futuristic warrior in different poses",
+    "img_resolution": "4k",
+    "aspect_ratio": "16:9",
+    "prefer_multi_shots": true
+  }'
+```
+
+### With Webhook
+```bash
+curl -X POST https://platform.runblob.io/v1/kling/o3-photo/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Beautiful landscape with mountains and lakes",
+    "img_resolution": "4k",
+    "aspect_ratio": "21:9",
+    "callback_url": "https://your-app.com/webhook/o3-photo"
+  }'
+```
+
+### Check Status
+```bash
+curl -X GET https://platform.runblob.io/v1/kling/o3-photo/generations/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Python
+
+### Simple Client
+```python
+import requests
+import time
+
+class KlingO3PhotoClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://platform.runblob.io"
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    
+    def generate(self, prompt, **kwargs):
+        response = requests.post(
+            f"{self.base_url}/v1/kling/o3-photo/generate",
+            headers=self.headers,
+            json={"prompt": prompt, **kwargs}
+        )
+        return response.json()
+    
+    def status(self, generation_id):
+        response = requests.get(
+            f"{self.base_url}/v1/kling/o3-photo/generations/{generation_id}",
+            headers=self.headers
+        )
+        return response.json()
+    
+    def wait_for_completion(self, generation_id, poll_interval=5):
+        max_attempts = 60  # 5 minutes max
+        for _ in range(max_attempts):
+            result = self.status(generation_id)
+            if result["status"] == "completed":
+                return result["image_url"]
+            elif result["status"] == "failed":
+                raise Exception("Generation failed")
+            time.sleep(poll_interval)
+        raise TimeoutError("Generation timed out")
+
+# Usage
+client = KlingO3PhotoClient("YOUR_API_KEY")
+
+# Simple generation
+result = client.generate(
+    "A futuristic cyberpunk city at night",
+    img_resolution="4k",
+    aspect_ratio="16:9"
+)
+print(f"Generation ID: {result['generation_id']}")
+
+# Wait for completion
+image_url = client.wait_for_completion(result["generation_id"])
+print(f"Image ready: {image_url}")
+```
+
+### With Reference Images (URLs)
+```python
+# With reference images
+result = client.generate(
+    "Beautiful landscape combining these styles",
+    images_url=[
+        "https://example.com/ref1.jpg",
+        "https://example.com/ref2.jpg"
+    ],
+    img_resolution="4k",
+    aspect_ratio="auto"
+)
+
+image_url = client.wait_for_completion(result["generation_id"])
+print(f"Image ready: {image_url}")
+```
+
+### With Base64 Images
+```python
+import base64
+
+def encode_image(image_path):
+    with open(image_path, "rb") as f:
+        return f"data:image/jpeg;base64,{base64.b64encode(f.read()).decode()}"
+
+# Upload local images
+result = client.generate(
+    "Combine these photos into an artistic collage",
+    images_base64=[
+        encode_image("photo1.jpg"),
+        encode_image("photo2.jpg")
+    ],
+    img_resolution="2k",
+    aspect_ratio="1:1"
+)
+
+image_url = client.wait_for_completion(result["generation_id"])
+```
+
+### Advanced: With Error Handling
+```python
+import requests
+from typing import Optional
+
+class O3PhotoClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://platform.runblob.io"
+    
+    def generate(self, prompt, **kwargs):
+        try:
+            response = requests.post(
+                f"{self.base_url}/v1/kling/o3-photo/generate",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={"prompt": prompt, **kwargs},
+                timeout=30
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 402:
+                raise ValueError("INSUFFICIENT_CREDITS: Please top up your balance")
+            elif e.response.status_code == 400:
+                error_detail = e.response.json().get("detail", "Unknown error")
+                raise ValueError(f"Invalid request: {error_detail}")
+            else:
+                raise
+    
+    def get_status(self, generation_id):
+        response = requests.get(
+            f"{self.base_url}/v1/kling/o3-photo/generations/{generation_id}",
+            headers={"Authorization": f"Bearer {self.api_key}"}
+        )
+        response.raise_for_status()
+        return response.json()
+
+# Usage with error handling
+try:
+    client = O3PhotoClient("YOUR_API_KEY")
+    result = client.generate(
+        "Epic fantasy landscape",
+        img_resolution="4k",
+        aspect_ratio="16:9"
+    )
+    print(f"✅ Generation started: {result['generation_id']}")
+except ValueError as e:
+    print(f"❌ Error: {e}")
+```
+
+## JavaScript / Node.js
+
+### Simple Client
+```javascript
+const fetch = require('node-fetch');
+
+class KlingO3PhotoClient {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseUrl = 'https://platform.runblob.io';
+  }
+
+  async generate(prompt, options = {}) {
+    const response = await fetch(`${this.baseUrl}/v1/kling/o3-photo/generate`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ prompt, ...options })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Generation failed: ${error.detail || 'Unknown error'}`);
+    }
+
+    return await response.json();
+  }
+
+  async getStatus(generationId) {
+    const response = await fetch(
+      `${this.baseUrl}/v1/kling/o3-photo/generations/${generationId}`,
+      {
+        headers: { 'Authorization': `Bearer ${this.apiKey}` }
+      }
+    );
+    return await response.json();
+  }
+
+  async waitForCompletion(generationId, pollInterval = 5000) {
+    const maxAttempts = 60; // 5 minutes
+    for (let i = 0; i < maxAttempts; i++) {
+      const result = await this.getStatus(generationId);
+      
+      if (result.status === 'completed') {
+        return result.image_url;
+      } else if (result.status === 'failed') {
+        throw new Error('Generation failed');
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+    throw new Error('Generation timed out');
+  }
+}
+
+// Usage
+(async () => {
+  const client = new KlingO3PhotoClient('YOUR_API_KEY');
+  
+  // Simple generation
+  const result = await client.generate(
+    'A futuristic cyberpunk city at night',
+    {
+      img_resolution: '4k',
+      aspect_ratio: '16:9'
+    }
+  );
+  
+  console.log('Generation ID:', result.generation_id);
+  
+  // Wait for completion
+  const imageUrl = await client.waitForCompletion(result.generation_id);
+  console.log('Image ready:', imageUrl);
+})();
+```
+
+### With Reference Images (URLs)
+```javascript
+const client = new KlingO3PhotoClient('YOUR_API_KEY');
+
+const result = await client.generate(
+  'Beautiful landscape combining these styles',
+  {
+    images_url: [
+      'https://example.com/ref1.jpg',
+      'https://example.com/ref2.jpg'
+    ],
+    img_resolution: '4k',
+    aspect_ratio: 'auto'
+  }
+);
+
+const imageUrl = await client.waitForCompletion(result.generation_id);
+```
+
+### With Base64 Upload
+```javascript
+const fs = require('fs').promises;
+
+async function encodeImage(imagePath) {
+  const buffer = await fs.readFile(imagePath);
+  return `data:image/jpeg;base64,${buffer.toString('base64')}`;
+}
+
+// Upload local images
+const result = await client.generate(
+  'Combine these photos into an artistic collage',
+  {
+    images_base64: [
+      await encodeImage('photo1.jpg'),
+      await encodeImage('photo2.jpg')
+    ],
+    img_resolution: '2k',
+    aspect_ratio: '1:1'
+  }
+);
+```
+
+### Using Webhooks (Recommended)
+```javascript
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+// Webhook endpoint
+app.post('/webhook/o3-photo', (req, res) => {
+  const { generation_id, status, image_url, message } = req.body;
+  
+  if (status === 'completed') {
+    console.log(`✅ Image ready for ${generation_id}: ${image_url}`);
+    // Process the completed image
+    processImage(generation_id, image_url);
+  } else {
+    console.error(`❌ Generation failed for ${generation_id}: ${message}`);
+    // Handle the error
+    handleError(generation_id, message);
+  }
+  
+  res.status(200).json({ status: 'received' });
+});
+
+// Generate with webhook
+const client = new KlingO3PhotoClient('YOUR_API_KEY');
+const result = await client.generate(
+  'Epic fantasy landscape',
+  {
+    img_resolution: '4k',
+    aspect_ratio: '16:9',
+    callback_url: 'https://your-app.com/webhook/o3-photo'
+  }
+);
+
+console.log('Generation started:', result.generation_id);
+// Webhook will notify when complete
+
+app.listen(3000);
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion icon="webhook" title="Use Webhooks for Production">
+    Polling is inefficient and can hit rate limits. Use webhooks to receive instant notifications:
+    
+    ```javascript
+    const result = await client.generate(prompt, {
+      callback_url: 'https://your-app.com/webhook/o3-photo'
+    });
+    ```
+  </Accordion>
+  
+  <Accordion icon="check-circle" title="Always Validate Input">
+    Check parameters before sending:
+    
+    ```python
+    def validate_prompt(prompt):
+        if len(prompt) < 1 or len(prompt) > 2500:
+            raise ValueError("Prompt must be 1-2500 characters")
+        return True
+    
+    def validate_resolution(resolution):
+        if resolution not in ['1k', '2k', '4k']:
+            raise ValueError("Resolution must be 1k, 2k, or 4k")
+        return True
+    ```
+  </Accordion>
+  
+  <Accordion icon="shield" title="Handle Errors Gracefully">
+    Always wrap API calls in try-catch blocks:
+    
+    ```javascript
+    try {
+      const result = await client.generate(prompt, options);
+      // Success
+    } catch (error) {
+      if (error.message.includes('INSUFFICIENT_CREDITS')) {
+        // Handle payment error
+      } else {
+        // Handle other errors
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion icon="download" title="Download & Store Images">
+    CDN URLs may expire after 24 hours. Download and save to your storage:
+    
+    ```python
+    import requests
+    
+    def download_image(url, save_path):
+        response = requests.get(url)
+        with open(save_path, 'wb') as f:
+            f.write(response.content)
+    
+    # After generation completes
+    download_image(image_url, f'images/{generation_id}.png')
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Issues & Solutions
+
+<AccordionGroup>
+  <Accordion icon="question" title="How to handle timeouts?">
+    **Solution:** Set reasonable polling intervals and timeouts:
+    
+    ```python
+    def wait_with_timeout(generation_id, timeout=300):  # 5 minutes
+        start = time.time()
+        while time.time() - start < timeout:
+            status = client.get_status(generation_id)
+            if status['status'] in ['completed', 'failed']:
+                return status
+            time.sleep(5)
+        raise TimeoutError("Generation took too long")
+    ```
+  </Accordion>
+  
+  <Accordion icon="image" title="How to handle large images?">
+    **Solution:** Use streaming for large Base64 uploads:
+    
+    ```python
+    import base64
+    
+    def encode_large_image(path, max_size_mb=10):
+        size_mb = os.path.getsize(path) / (1024 * 1024)
+        if size_mb > max_size_mb:
+            raise ValueError(f"Image too large: {size_mb:.1f}MB (max {max_size_mb}MB)")
+        
+        with open(path, 'rb') as f:
+            return f"data:image/jpeg;base64,{base64.b64encode(f.read()).decode()}"
+    ```
+  </Accordion>
+</AccordionGroup>

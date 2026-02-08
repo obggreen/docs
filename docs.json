@@ -77,6 +77,17 @@
             ]
           },
           {
+            "group": "Kling O3 Photos",
+            "icon": "image",
+            "pages": [
+              "api-reference/kling/o3-photo-generate",
+              "api-reference/kling/o3-photo-status",
+              "api-reference/kling/o3-photo-webhooks",
+              "api-reference/kling/o3-photo-errors",
+              "api-reference/kling/o3-photo-examples"
+            ]
+          },
+          {
             "group": "Kling O1 Videos",
             "icon": "video",
             "pages": [
@@ -85,6 +96,17 @@
               "api-reference/kling/video-webhooks",
               "api-reference/kling/video-errors",
               "api-reference/kling/video-examples"
+            ]
+          },
+          {
+            "group": "Kling O3 Videos",
+            "icon": "sparkles",
+            "pages": [
+              "api-reference/kling/o3-video-generate",
+              "api-reference/kling/o3-video-status",
+              "api-reference/kling/o3-video-webhooks",
+              "api-reference/kling/o3-video-errors",
+              "api-reference/kling/o3-video-examples"
             ]
           },
           {

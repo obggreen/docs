@@ -1,0 +1,245 @@
+---
+title: "Check Status"
+description: "Check the status of your O3 Video generation"
+---
+
+<Info>
+  **Base URL:** `https://platform.runblob.io`
+</Info>
+
+## GET /v1/kling/o3-video/generations/{generation_id}
+
+Retrieve the current status and result of a video generation task.
+
+<ParamField path="generation_id" type="string" required>
+  The unique identifier returned from the generate request
+</ParamField>
+
+<Accordion title="Status Values" icon="list">
+  - **`pending`** - Task created, waiting in queue
+  - **`processing`** - Video is being generated
+  - **`completed`** - Generation finished, video ready
+  - **`failed`** - Generation failed (see webhook for error details)
+</Accordion>
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://platform.runblob.io/v1/kling/o3-video/generations/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://platform.runblob.io/v1/kling/o3-video/generations/550e8400-e29b-41d4-a716-446655440000",
+    headers={"Authorization": "Bearer YOUR_API_KEY"}
+)
+
+data = response.json()
+print(f"Status: {data['status']}")
+if data['status'] == 'completed':
+    print(f"Video URL: {data['video_url']}")
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://platform.runblob.io/v1/kling/o3-video/generations/550e8400-e29b-41d4-a716-446655440000',
+  {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY'
+    }
+  }
+);
+
+const data = await response.json();
+console.log('Status:', data.status);
+if (data.status === 'completed') {
+  console.log('Video URL:', data.video_url);
+}
+```
+
+</CodeGroup>
+
+## Response Examples
+
+<Tabs>
+  <Tab title="Pending/Processing">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "processing",
+      "prompt": "Dragon flying over mountains",
+      "video_url": null,
+      "model": "kling-o3-video-10s-pro"
+    }
+    ```
+    
+    <Note>
+      Keep polling this endpoint every 5 seconds until status changes to `completed` or `failed`.
+      
+      **Expected timeline:**
+      - `pending` → `processing`: 10-30 seconds
+      - `processing` → `completed`: 2-10 minutes (varies by duration and mode)
+      
+      **Generation times:**
+      - 5s Standard: ~2-3 minutes
+      - 10s Standard: ~3-5 minutes
+      - 15s Standard: ~5-7 minutes
+      - Pro mode: +30-50% longer
+    </Note>
+  </Tab>
+  
+  <Tab title="Completed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "completed",
+      "prompt": "Dragon flying over mountains",
+      "video_url": "https://cdn.example.com/videos/550e8400.mp4",
+      "model": "kling-o3-video-10s-pro"
+    }
+    ```
+    
+    <Note>
+      The `video_url` is a direct link to the generated video. Download and save it to your storage as CDN links may expire after 24 hours.
+    </Note>
+  </Tab>
+  
+  <Tab title="Failed">
+    ```json
+    {
+      "generation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "failed",
+      "prompt": "Dragon flying over mountains",
+      "video_url": null,
+      "model": "kling-o3-video-10s-pro"
+    }
+    ```
+    
+    <Warning>
+      For detailed error information, check your [webhook payload](/api-reference/kling/o3-video-webhooks) if configured, or refer to [error codes](/api-reference/kling/o3-video-errors).
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Response Fields
+
+<ResponseField name="generation_id" type="string">
+  Unique identifier for this generation
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current status: `pending`, `processing`, `completed`, or `failed`
+</ResponseField>
+
+<ResponseField name="prompt" type="string">
+  The original text prompt used for generation
+</ResponseField>
+
+<ResponseField name="video_url" type="string | null">
+  Direct URL to the generated video (only available when status is `completed`)
+</ResponseField>
+
+<ResponseField name="model" type="string">
+  Model identifier, e.g., `kling-o3-video-5s`, `kling-o3-video-10s-pro`, `kling-o3-video-15s`
+</ResponseField>
+
+## Polling Best Practices
+
+<Steps>
+  <Step title="Wait Before First Check">
+    Wait 10 seconds after generation request before your first status check to give the system time to queue the task
+  </Step>
+  
+  <Step title="Use Progressive Intervals">
+    Start with 5-second intervals, gradually increase to 10-15 seconds after first few checks
+    
+    ```javascript
+    const intervals = [5000, 5000, 10000, 15000, 15000]; // Progressive delay
+    ```
+  </Step>
+  
+  <Step title="Set Maximum Timeout">
+    Stop polling after 15 minutes. If still not completed, assume failure and check error logs
+  </Step>
+  
+  <Step title="Use Webhooks for Production">
+    For production apps, use [webhooks](/api-reference/kling/o3-video-webhooks) instead of polling to reduce latency and API calls
+  </Step>
+</Steps>
+
+## Polling Implementation
+
+<CodeGroup>
+
+```javascript Adaptive Polling
+async function pollVideoStatus(generationId) {
+  const intervals = [2000, 3000, 5000, 10000, 15000]; // 2s, 3s, 5s, 10s, 15s
+  const maxAttempts = 60; // 15 minutes max
+  
+  let attempt = 0;
+  while (attempt < maxAttempts) {
+    const status = await fetchStatus(generationId);
+    
+    if (status.status === 'completed' || status.status === 'failed') {
+      return status;
+    }
+    
+    const delay = intervals[Math.min(attempt, intervals.length - 1)];
+    await sleep(delay);
+    attempt++;
+  }
+  
+  throw new Error('Generation timed out after 15 minutes');
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+```
+
+```python Python Polling
+import time
+from typing import Dict
+
+def poll_video_status(generation_id: str, max_attempts: int = 60) -> Dict:
+    """Poll video status with progressive backoff"""
+    intervals = [2, 3, 5, 10, 15]  # seconds
+    
+    for attempt in range(max_attempts):
+        status = fetch_status(generation_id)
+        
+        if status['status'] in ['completed', 'failed']:
+            return status
+        
+        delay = intervals[min(attempt, len(intervals) - 1)]
+        time.sleep(delay)
+    
+    raise TimeoutError('Generation timed out after 15 minutes')
+```
+
+</CodeGroup>
+
+<Warning>
+  **Rate Limits:** Maximum 60 status checks per minute per API key. Use webhooks to avoid hitting this limit.
+</Warning>
+
+## Model Naming
+
+The `model` field in the response indicates the configuration used:
+
+<Tabs>
+  <Tab title="Standard Mode">
+    - `kling-o3-video-5s` - 5 seconds, 720p
+    - `kling-o3-video-10s` - 10 seconds, 720p
+    - `kling-o3-video-15s` - 15 seconds, 720p
+  </Tab>
+  
+  <Tab title="Pro Mode">
+    - `kling-o3-video-5s-pro` - 5 seconds, 1080p
+    - `kling-o3-video-10s-pro` - 10 seconds, 1080p
+    - `kling-o3-video-15s-pro` - 15 seconds, 1080p
+  </Tab>
+</Tabs>
