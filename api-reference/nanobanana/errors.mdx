@@ -47,11 +47,11 @@ When a generation fails, the `message` field contains the error code:
 
 ```json
 {
-  "detail": "Quality 2k/4k is only available for Pro model"
+  "detail": "Quality 2k/4k is only available for Pro and V2 models"
 }
 ```
 
-**Solution:** Use `quality` parameter only with `model: "pro"`
+**Solution:** Use `quality` parameter only with `model: "pro"` or `model: "v2"`
 
 ### Invalid Prompt Length
 

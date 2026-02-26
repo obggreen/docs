@@ -1,6 +1,6 @@
 ---
 title: "Generate Image"
-description: "Create images from text prompts using Nano Banana (Gemini)"
+description: "Create images from text prompts using Nano Banana (Gemini). Models: Standard, Pro, and V2 (Nano Banana 2)."
 ---
 
 <Info>
@@ -11,16 +11,24 @@ description: "Create images from text prompts using Nano Banana (Gemini)"
 
 Creates an image generation task from text description using Nano Banana (Gemini Image Generation).
 
+### Available Models
+
+| Model | Value | Quality Options | Max Images | Description |
+|-------|-------|----------------|------------|-------------|
+| Standard | `standard` | `standard` only | 4 | Fast generation with Gemini 2.5 Flash |
+| Pro | `pro` | `standard`, `2k`, `4k` | 8 | High quality with Gemini 3.0 Pro |
+| **Nano Banana 2** | `v2` | `standard`, `2k`, `4k` | 8 | Next-gen with Gemini 3.1 Flash |
+
 <ParamField path="prompt" type="string" required>
   Text description of the image (1-4000 characters)
 </ParamField>
 
 <ParamField path="model" type="string" default="standard">
-  Model version: `"standard"` or `"pro"`
+  Model version: `"standard"`, `"pro"`, or `"v2"`
 </ParamField>
 
 <ParamField path="quality" type="string" default="standard">
-  Image quality (only for `pro` model): `"standard"`, `"2k"`, or `"4k"`
+  Image quality (for `pro` and `v2` models): `"standard"`, `"2k"`, or `"4k"`
 </ParamField>
 
 <ParamField path="aspect_ratio" type="string" default="auto">
@@ -37,7 +45,7 @@ Creates an image generation task from text description using Nano Banana (Gemini
 </ParamField>
 
 <ParamField path="images" type="array">
-  Array of up to 4 input images (base64 or URLs) for image editing/transformation
+  Array of input images (base64 or URLs) for image editing/transformation. Up to 4 for `standard`, up to 8 for `pro` and `v2`.
 </ParamField>
 
 <ParamField path="callback_url" type="string">
@@ -67,6 +75,18 @@ curl -X POST https://platform.runblob.io/v1/gemini/generate \
     "quality": "4k",
     "aspect_ratio": "9:16",
     "temperature": 0.8
+  }'
+```
+
+```bash Nano Banana 2 (V2)
+curl -X POST https://platform.runblob.io/v1/gemini/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A futuristic space station orbiting Mars",
+    "model": "v2",
+    "quality": "2k",
+    "aspect_ratio": "16:9"
   }'
 ```
 
@@ -162,12 +182,12 @@ console.log(data.task_uuid);
 </Note>
 
 <Warning>
-  `quality` parameter (`2k`, `4k`) is only available for the `pro` model. Using it with `standard` model will result in an error.
+  `quality` parameter (`2k`, `4k`) is only available for the `pro` and `v2` models. Using it with `standard` model will result in an error.
 </Warning>
 
 ## Input Images
 
-You can provide up to **4 input images** for image editing or transformation:
+You can provide input images for image editing or transformation. Limit: **4 images** for `standard`, **8 images** for `pro` and `v2`.
 
 - **Base64:** `"data:image/jpeg;base64,/9j/4AAQ..."`
 - **URL:** `"https://example.com/image.jpg"`
