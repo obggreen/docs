@@ -23,9 +23,13 @@ Creates a video generation task from text description using Kling AI models.
   Model to use.
   
   **Available models:**
-  - `kling_2.6_motion` (NEW: Motion Control Standard)
-  - `kling_2.6_motion_pro` (NEW: Motion Control Pro, 2x price)
-  - `kling_2.6` (NEW: Audio-enabled, always Pro quality)
+  - `kling_3` (NEW: Kling 3.0 Standard — 720p, duration 3-15s as int)
+  - `kling_3_pro` (NEW: Kling 3.0 Pro — 1080p, duration 3-15s as int)
+  - `kling_3_motion` (NEW: Kling 3.0 Motion Control Standard — recommended)
+  - `kling_3_motion_pro` (NEW: Kling 3.0 Motion Control Pro)
+  - `kling_2.6_motion` (Motion Control Standard, legacy)
+  - `kling_2.6_motion_pro` (Motion Control Pro, legacy)
+  - `kling_2.6` (Audio-enabled, always Pro quality)
   - `kling_2.5_turbo` (Standard/Turbo)
   - `kling_2.5_turbo_pro` (Professional/Turbo Pro)
   - `kling_2.1` (Standard)
@@ -35,8 +39,11 @@ Creates a video generation task from text description using Kling AI models.
   - `kling_1.6_pro` (Professional)
 </ParamField>
 
-<ParamField path="duration" type="string" default="5">
-  Duration: `"5"` (5 seconds) or `"10"` (10 seconds)
+<ParamField path="duration" type="string | int" default="5">
+  Duration of the video.
+
+  - **For `kling_3` / `kling_3_pro`:** integer from **3 to 15** (e.g. `4`, `10`). Per-second pricing applies.
+  - **For all other models:** string `"5"` or `"10"`.
 </ParamField>
 
 <ParamField path="aspect_ratio" type="string" default="16:9">
@@ -94,6 +101,32 @@ Creates a video generation task from text description using Kling AI models.
 </Warning>
 
 <CodeGroup>
+
+```bash Kling 3.0 Standard
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kling_3",
+    "prompt": "A golden retriever running through a sunflower field at sunset",
+    "duration": 4
+  }'
+```
+
+```bash Kling 3.0 Pro
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kling_3_pro",
+    "prompt": "A cinematic shot of a spaceship landing on Mars",
+    "negative_prompt": "blurry, low quality, watermark",
+    "duration": 12,
+    "aspect_ratio": "16:9",
+    "cfg_scale": 0.7,
+    "callback_url": "https://myapp.com/webhook/kling"
+  }'
+```
 
 ```bash Text-to-Video
 curl -X POST https://platform.runblob.io/v1/kling/generate \
@@ -155,6 +188,30 @@ curl -X POST https://platform.runblob.io/v1/kling/generate \
     "image_url": "https://example.com/my-image.jpg",
     "model": "kling_2.1_master",
     "duration": "10"
+  }'
+```
+
+```bash Kling 3.0 Motion (URLs)
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kling_3_motion",
+    "prompt": "A woman dancing gracefully in a ballroom",
+    "reference_video_url": "https://example.com/dance_reference.mp4",
+    "reference_image_url": "https://example.com/character.jpg"
+  }'
+```
+
+```bash Kling 3.0 Motion Pro (Base64)
+curl -X POST https://platform.runblob.io/v1/kling/generate \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kling_3_motion_pro",
+    "prompt": "A man walking through a futuristic city",
+    "reference_video_base64": "data:video/mp4;base64,AAAAIGZ0eXBpc29t...",
+    "reference_image_base64": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
   }'
 ```
 
@@ -290,7 +347,7 @@ The API supports **3 generation modes**:
 ### 1. Text-to-Video
 Generate video from text prompt only (no images).
 
-**Models:** `kling_1.6`, `kling_2.1_master`, `kling_2.5_turbo`, `kling_2.6`
+**Models:** `kling_1.6`, `kling_2.1_master`, `kling_2.5_turbo`, `kling_2.6`, `kling_3`, `kling_3_pro`
 
 <Warning>
   `kling_2.1` and `kling_2.1_pro` do NOT support text-to-video. They require an input image.
@@ -301,7 +358,7 @@ Animate a single image with text prompt using `image_base64` or `image_url` para
 
 - Formats: JPEG, PNG, WEBP
 - Max size: ~10 MB
-- Models: `kling_1.6`, `kling_2.1`, `kling_2.1_master`, `kling_2.5_turbo`, `kling_2.6` (and their `_pro` variants)
+- Models: `kling_1.6`, `kling_2.1`, `kling_2.1_master`, `kling_2.5_turbo`, `kling_2.6`, `kling_3`, `kling_3_pro` (and their `_pro` variants where applicable)
 
 <Info>
   **Important:** You cannot use both `image_base64` and `image_url` in the same request. For image-to-video mode, aspect ratio is taken from the input image automatically.
@@ -314,7 +371,7 @@ Transfer motion and style from a reference video to a reference image.
 - **Video duration:** 3-30 seconds
 - **Video formats:** MP4, MOV, WEBM
 - **Image formats:** JPEG, PNG, WEBP
-- **Models:** `kling_2.6_motion`, `kling_2.6_motion_pro`
+- **Models:** `kling_3_motion`, `kling_3_motion_pro`, `kling_2.6_motion`, `kling_2.6_motion_pro`
 - **Pricing:** Per second (rounded up)
   - Standard: $0.041/sec
   - Pro: $0.082/sec (2x price)
@@ -332,7 +389,41 @@ Transfer motion and style from a reference video to a reference image.
 
 ## Models Guide
 
-### Kling 2.6 Motion Control (NEW)
+### Kling 3.0 (NEW)
+- **Codes:** `kling_3`, `kling_3_pro`
+- **Features:**
+  - Text-to-video: Yes
+  - Image-to-video: Yes
+  - Motion Control: No (use `kling_3_motion` / `kling_3_motion_pro`)
+  - Negative prompt: Yes
+  - CFG Scale: Yes
+  - Duration: **integer 3-15** (per-second pricing)
+- **Resolution:**
+  - `kling_3`: 720p
+  - `kling_3_pro`: 1080p
+- **Best for:** Latest generation — flexible duration, high quality
+
+<Warning>
+  For `kling_3` and `kling_3_pro`, send `duration` as an **integer** (e.g. `4`), not a string. Range: 3-15. Default: 5.
+</Warning>
+
+### Kling 3.0 Motion Control (NEW — Recommended)
+- **Codes:** `kling_3_motion`, `kling_3_motion_pro`
+- **Features:**
+  - Requires reference video (3-30s) + reference image
+  - Duration: Auto-detected from reference video
+  - Aspect ratio: Auto-detected from reference video
+  - Negative prompt: Yes
+  - CFG Scale: Yes
+- **Improvements over 2.6 Motion:**
+  - Better motion fidelity from reference video
+  - More realistic physics (hair, clothing, liquids)
+  - Fewer artifacts and deformations
+  - Better character preservation from reference image
+- **Pricing:** Per second (same rate as `kling_2.6_motion`)
+- **Best for:** Motion transfer — replaces `kling_2.6_motion` as the recommended model
+
+### Kling 2.6 Motion Control (Legacy)
 - **Codes:** `kling_2.6_motion`, `kling_2.6_motion_pro`
 - **Features:**
   - Motion transfer from reference video
@@ -346,7 +437,7 @@ Transfer motion and style from a reference video to a reference image.
   - Pro: $0.082/sec (2x price)
 - **Best for:** Transferring motion and style from reference videos
 
-### Kling 2.6 (NEW)
+### Kling 2.6
 - **Code:** `kling_2.6`
 - **Features:**
   - Text-to-video: Yes
